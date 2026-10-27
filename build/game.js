@@ -1,4 +1,4 @@
-/*! NEON GEARSTORM v1.1.1 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved.
+/*! NEON GEARSTORM v1.1.2 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved.
  *  Unauthorized copying, distribution or modification of this file is prohibited. */
 (()=>{'use strict';
 // ---- sprites.js : pre-rendered neon/steampunk sprites (glow baked once for speed)
@@ -554,7 +554,7 @@ function drawBoss3(e){const sh=e.dying?rnd(-3,3):0,x=e.x+sh,y=e.y,fl=e.fl>0&&e.f
  if(e.ms===5){txt('WHISTLE',x,y-100,COL.cy,10,'center',6);}}
 
 // ---- main.js : game loop, entities, stage script
-const VERSION='v1.1.1';
+const VERSION='v1.1.2';
 const Q=new URLSearchParams(location.search);
 const DBG=(Q.get('debug')||'').split(',');
 const DBG_BOSS=DBG.includes('boss'),DBG_MID=DBG.includes('mid'),DBG_INV=DBG.includes('inv'),DBG_S2=DBG.includes('stage2'),DBG_B2=DBG.includes('boss2'),DBG_S3=DBG.includes('stage3'),DBG_B3=DBG.includes('boss3'); // v0.3: ?debug=boss no longer silently grants invincibility (root cause of 'red bullets did no damage')

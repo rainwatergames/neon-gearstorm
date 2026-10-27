@@ -1,5 +1,5 @@
 // ---- main.js : game loop, entities, stage script
-const VERSION='v1.1.1';
+const VERSION='v1.1.2';
 const Q=new URLSearchParams(location.search);
 const DBG=(Q.get('debug')||'').split(',');
 const DBG_BOSS=DBG.includes('boss'),DBG_MID=DBG.includes('mid'),DBG_INV=DBG.includes('inv'),DBG_S2=DBG.includes('stage2'),DBG_B2=DBG.includes('boss2'),DBG_S3=DBG.includes('stage3'),DBG_B3=DBG.includes('boss3'); // v0.3: ?debug=boss no longer silently grants invincibility (root cause of 'red bullets did no damage')
