@@ -1,4 +1,4 @@
-# NEON GEARSTORM (working title) — v1.1
+# NEON GEARSTORM (working title) — v1.1.1
 
 A neon + steampunk vertical shoot-'em-up for phones (PWA), by **Rainwater Games**.
 Play: https://rainwatergames.github.io/neon-gearstorm/
@@ -7,6 +7,9 @@ Play: https://rainwatergames.github.io/neon-gearstorm/
 - Debug: `?debug=boss` (jump to boss, invincible, max weapon), `?debug=mid`, `?debug=inv`, add `laser`/`tesla`, `autostart`, `stage2`, `boss2`, `stage3`, `boss3`, `s2only` (end the run after boss 2).
 
 © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. See LICENSE — not open source.
+
+## v1.1.1
+- Touch BOMB button moved to mid-left (vertically centred, scales 60–96px with screen, safe-area aware, clamped clear of SHIELD/HULL bars and the bottom HUD) in portrait and landscape. Saved bomb-side settings are reset to LEFT once. Test: `node tools/v111bomb.js <url>`.
 
 ## v1.1 — Stage 3: Speed Run Rail Chase
 - After the Iron Foundry boss the run continues into Stage 3: ~2x scroll sold by thin cyan/purple speed rails and motion-blurred ties (never round/red), chasing an armored steampunk train on twisting neon track.
