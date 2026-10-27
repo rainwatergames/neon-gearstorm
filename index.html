@@ -21,7 +21,7 @@ canvas{display:block;touch-action:none}
 .ov{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(ellipse at center,rgba(5,3,12,.35),rgba(5,3,12,.85))}
 .hide{display:none!important}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:280px;margin:10px 0;font-size:13px;letter-spacing:.2em;color:#e6feff;text-shadow:0 0 6px #2ef9ff}
-.row input{flex:1;accent-color:#ff3df0}.tog.on{border-color:#a6ff3a;text-shadow:0 0 8px #a6ff3a}
+.row .lb{width:96px;text-align:left}.row input{flex:1;accent-color:#ff3df0}.tog.on{border-color:#a6ff3a;text-shadow:0 0 8px #a6ff3a}
 #settings .btn,#photo .btn{margin-top:10px}
 .logo{line-height:.95;margin:0 0 6px}
 .logo .a{display:block;font-size:56px;font-weight:900;letter-spacing:.12em;color:#ffe6fd;text-shadow:0 0 6px #ff3df0,0 0 18px #ff3df0,0 0 40px #ff3df0}
@@ -60,9 +60,9 @@ h2{font-size:38px;margin:0 0 10px;letter-spacing:.12em}
 <div id="over" class="ov hide"><h2 class="go">GAME OVER</h2><div class="lbl">SCORE</div><div class="big" id="oScore">0</div><div class="lbl">HI-SCORE <span id="oHi"></span></div><br><button class="btn" id="bRetry">RETRY</button><button class="btn alt" id="bTitle1">TITLE</button><div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
 <div id="clear" class="ov hide"><h2 class="sc">STAGE CLEAR</h2><div class="lbl">CLOCKWORK COLOSSUS DESTROYED</div><br><div class="lbl">BONUS</div><div id="cBonus" style="color:#ffb52e;margin:4px 0 10px"></div><div class="lbl">SCORE</div><div class="big" id="cScore">0</div><div class="lbl">HI-SCORE <span id="cHi"></span></div><br><button class="btn" id="bAgain">PLAY AGAIN</button><button class="btn alt" id="bTitle2">TITLE</button><div class="lbl" style="margin-top:12px">MORE STAGES COMING SOON</div><div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
 <div id="settings" class="ov hide"><h2 class="pz">SETTINGS</h2>
- <label class="row">MUSIC <input type="range" id="sMus" min="0" max="1" step="0.05"></label>
- <label class="row">SFX <input type="range" id="sSfx" min="0" max="1" step="0.05"></label>
- <label class="row">DRAG SPEED <input type="range" id="sSens" min="0.6" max="2" step="0.1"><span id="sSensV"></span></label>
+ <label class="row"><span class="lb">MUSIC</span><input type="range" id="sMus" min="0" max="1" step="0.05"></label>
+ <label class="row"><span class="lb">SFX</span><input type="range" id="sSfx" min="0" max="1" step="0.05"></label>
+ <label class="row"><span class="lb">DRAG SPEED</span><input type="range" id="sSens" min="0.6" max="2" step="0.1"><span id="sSensV"></span></label>
  <button class="btn alt tog" id="sRF">REDUCE FLASHING: OFF</button>
  <div class="help">Reduce Flashing turns off strobes and full-screen flashes and softens the beat pulse.<br>Touch: hold a second finger anywhere for slow, precise movement.</div>
  <button class="btn" id="bSetBack">BACK</button><div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
