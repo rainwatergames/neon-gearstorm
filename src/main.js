@@ -1,12 +1,14 @@
 // ---- main.js : game loop, entities, stage script
-const VERSION='v1.1.2';
+const VERSION='v1.1.3';
 const Q=new URLSearchParams(location.search);
 const DBG=(Q.get('debug')||'').split(',');
 const DBG_BOSS=DBG.includes('boss'),DBG_MID=DBG.includes('mid'),DBG_INV=DBG.includes('inv'),DBG_S2=DBG.includes('stage2'),DBG_B2=DBG.includes('boss2'),DBG_S3=DBG.includes('stage3'),DBG_B3=DBG.includes('boss3'); // v0.3: ?debug=boss no longer silently grants invincibility (root cause of 'red bullets did no damage')
 const cv=document.getElementById('c'),ctx=cv.getContext('2d',{alpha:false});
 let W=360,H=640,SC=1,DPR=1;
 const rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>v<a?a:v>b?b:v;
-function resize(){const iw=innerWidth,ih=innerHeight;H=Math.round(clamp(ih/iw*W,560,800));SC=Math.min(iw/W,ih/H);DPR=Math.min(devicePixelRatio||1,2);cv.width=Math.round(W*SC*DPR);cv.height=Math.round(H*SC*DPR);cv.style.width=Math.round(W*SC)+'px';cv.style.height=Math.round(H*SC)+'px';}
+function resize(){const iw=innerWidth,ih=innerHeight;H=Math.round(clamp(ih/iw*W,560,800));SC=Math.min(iw/W,ih/H);DPR=Math.min(devicePixelRatio||1,2);cv.width=Math.round(W*SC*DPR);cv.height=Math.round(H*SC*DPR);cv.style.width=Math.round(W*SC)+'px';cv.style.height=Math.round(H*SC)+'px';
+ // v1.1.2: bomb button sits just under the lowest top-HUD element (score/SHIELD/HULL bars, boss bar + label ≈ y74), in CSS px
+ try{const r=cv.getBoundingClientRect();document.documentElement.style.setProperty('--hudb',Math.round(r.top+76*SC)+'px');}catch(_){}}
 class Pool{constructor(n,f){this.a=[];for(let i=0;i<n;i++){const o=f();o.act=false;this.a.push(o);}this.i=0;}
  get(){const a=this.a,n=a.length;for(let k=0;k<n;k++){this.i=(this.i+1)%n;const o=a[this.i];if(!o.act){o.act=true;return o;}}return null;}
  clear(){for(const o of this.a)o.act=false;}count(){let c=0;for(const o of this.a)if(o.act)c++;return c;}}
@@ -50,7 +52,7 @@ const P={x:180,y:560,inv:0,dead:0,fireT:0,zapT:0,bank:0};
 // ---------- settings (persisted)
 const SET={rf:lsGet('ngs_rf')==='1',sens:+(lsGet('ngs_sens')||1.3)};
 // v0.5: bomb button side. Default LEFT (left thumb). One-time migration: older saved sides are discarded and reset to left.
-(()=>{if(lsGet('ngs_bside_mig2')!=='1'){try{localStorage.removeItem('ngs_bomb_pos');localStorage.removeItem('ngs_bombpos');}catch(_){}lsSet('ngs_bside','L');lsSet('ngs_bside_mig','1');lsSet('ngs_bside_mig2','1');}if(lsGet('ngs_bside_mig')!=='1'){try{localStorage.removeItem('ngs_bombside');localStorage.removeItem('ngs_bomb_side');}catch(_){}lsSet('ngs_bside','L');lsSet('ngs_bside_mig','1');}})();
+(()=>{if(lsGet('ngs_bside_mig3')!=='1'){try{localStorage.removeItem('ngs_bomb_pos');localStorage.removeItem('ngs_bombpos');}catch(_){}lsSet('ngs_bside','L');lsSet('ngs_bside_mig','1');lsSet('ngs_bside_mig2','1');lsSet('ngs_bside_mig3','1');}if(lsGet('ngs_bside_mig2')!=='1'){try{localStorage.removeItem('ngs_bomb_pos');localStorage.removeItem('ngs_bombpos');}catch(_){}lsSet('ngs_bside','L');lsSet('ngs_bside_mig','1');lsSet('ngs_bside_mig2','1');}if(lsGet('ngs_bside_mig')!=='1'){try{localStorage.removeItem('ngs_bombside');localStorage.removeItem('ngs_bomb_side');}catch(_){}lsSet('ngs_bside','L');lsSet('ngs_bside_mig','1');}})();
 SET.bside=lsGet('ngs_bside')==='R'?'R':'L';
 // ---------- lighting FX: light bursts, color flash, strobe, beat pulse
 const LT=new Pool(48,()=>({x:0,y:0,r:0,c:'am',life:0,max:1}));

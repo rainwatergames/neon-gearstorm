@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- NEON GEARSTORM v1.1.2 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. -->
+<!-- NEON GEARSTORM v1.1.3 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. -->
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="author" content="Rainwater Games - Jeff Rainwater">
@@ -43,9 +43,10 @@ h2{font-size:38px;margin:0 0 10px;letter-spacing:.12em}
 #hud button{position:fixed;z-index:10;font:inherit;font-weight:bold;color:#fff;background:rgba(5,3,12,.45);cursor:pointer}
 #bPause,#bMute{top:max(8px,env(safe-area-inset-top));width:38px;height:34px;border:1.5px solid #2ef9ff;border-radius:8px;box-shadow:0 0 8px rgba(46,249,255,.5);font-size:14px}
 #bPause{right:10px}#bMute{right:56px}
-#bBomb{--bs:clamp(60px,19vmin,96px);left:calc(14px + env(safe-area-inset-left,0px));right:auto;bottom:auto;top:clamp(calc(110px + env(safe-area-inset-top,0px)),calc(50% - var(--bs)/2),calc(100% - var(--bs) - 24px - env(safe-area-inset-bottom,0px)));width:var(--bs);height:var(--bs);border-radius:50%;border:2px solid #ff3df0;box-shadow:0 0 14px rgba(255,61,240,.7),inset 0 0 14px rgba(255,61,240,.35);font-size:clamp(11px,2.9vmin,14px);letter-spacing:.08em;text-shadow:0 0 6px #ff3df0;opacity:.85}
+#bBomb{--bs:clamp(44px,11.5vmin,58px);left:calc(12px + env(safe-area-inset-left,0px));right:auto;bottom:auto;top:max(calc(var(--hudb,84px) + 8px),calc(env(safe-area-inset-top,0px) + 8px));width:var(--bs);height:var(--bs);padding:0;line-height:1.05;border-radius:50%;border:2px solid #ff3df0;box-shadow:0 0 10px rgba(255,61,240,.7),inset 0 0 10px rgba(255,61,240,.35);font-size:clamp(8px,2.15vmin,11px);letter-spacing:.03em;text-shadow:0 0 5px #ff3df0;opacity:.85}
+#hud #bBomb{font-size:clamp(8px,2.15vmin,11px);line-height:1.05;white-space:normal}
 #bBomb.empty{opacity:.3}
-#bBomb.rside{right:calc(14px + env(safe-area-inset-right,0px));left:auto}
+#bBomb.rside{right:calc(12px + env(safe-area-inset-right,0px));left:auto}
 #bPause,#bMute{box-shadow:0 0 calc(6px + 12px*var(--p,0)) rgba(46,249,255,.6)}#bBomb{box-shadow:0 0 calc(10px + 18px*var(--p,0)) rgba(255,61,240,.75),inset 0 0 14px rgba(255,61,240,.35)}
 .pulse{animation:none;box-shadow:0 0 calc(12px + 18px*var(--p,0)) rgba(46,249,255,.7),inset 0 0 12px rgba(46,249,255,.3)}
 #hangar{justify-content:flex-start;background:rgba(5,3,12,.96);padding-top:max(18px,env(safe-area-inset-top))}
@@ -61,7 +62,7 @@ h2{font-size:38px;margin:0 0 10px;letter-spacing:.12em}
 <div id="splash"><div class="sp-t">RAINWATER GAMES</div><div class="dots"><i></i><i></i><i></i></div><div class="sp-t" style="font-size:10px;color:#889;text-shadow:none">LOADING</div></div>
 <canvas id="c"></canvas>
 <div id="hud" class="hide"><button id="bMute" aria-label="Mute">♪</button><button id="bPause" aria-label="Pause">II</button><button id="bBomb" aria-label="Bomb">BOMB</button></div>
-<div id="title" class="ov hide"><div class="ver" id="ver">v1.1.2</div>
+<div id="title" class="ov hide"><div class="ver" id="ver">v1.1.3</div>
  <svg class="gear" viewBox="-50 -50 100 100"><g fill="none" stroke="#ffb52e" stroke-width="4"><path d="M-6-46h12l2 10 8 3 8-6 9 8-6 9 3 8 10 2v12l-10 2-3 8 6 8-9 9-8-6-8 3-2 10h-12l-2-10-8-3-8 6-9-9 6-8-3-8-10-2v-12l10-2 3-8-6-9 9-8 8 6 8-3z"/><circle r="16" stroke="#2ef9ff"/><circle r="5" fill="#ff3df0" stroke="none"/></g></svg>
  <h1 class="logo"><span class="a">NEON</span><span class="b">GEARSTORM</span></h1>
  <div class="prod">A RAINWATER GAMES PRODUCTION</div>
@@ -86,6 +87,6 @@ h2{font-size:38px;margin:0 0 10px;letter-spacing:.12em}
  <div class="help" style="font-size:13px;color:#ccd;max-width:320px">NEON GEARSTORM contains flashing lights, strobe effects and rapidly pulsing colors that may trigger seizures for people with photosensitive epilepsy. Stop playing immediately if you feel unwell.</div><br>
  <button class="btn alt tog" id="pRF">REDUCE FLASHING: OFF</button><button class="btn" id="bPhotoOk">CONTINUE</button>
  <div class="help">You can change this any time in SETTINGS.</div></div>
-<script src="install.js?v=1.1.2" data-name="Neon Gearstorm" data-screens="#title,#photo"></script>
-<script src="build/game.js?v=1.1.2"></script>
+<script src="install.js?v=1.1.3" data-name="Neon Gearstorm" data-screens="#title,#photo"></script>
+<script src="build/game.js?v=1.1.3"></script>
 </body></html>

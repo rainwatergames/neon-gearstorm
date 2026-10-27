@@ -1,6 +1,6 @@
 /*! NEON GEARSTORM — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. */
 // v0.5: network-first that BYPASSES the HTTP cache (GitHub Pages sends max-age=600), so new deploys show on the first open.
-const C='ngs-v1.1.2';const F=['./','index.html','build/game.js?v=1.1.2','install.js?v=1.1.2','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
+const C='ngs-v1.1.3';const F=['./','index.html','build/game.js?v=1.1.3','install.js?v=1.1.3','manifest.webmanifest','icon.svg','icon-192.png','icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(F.map(u=>new Request(u,{cache:'no-store'})))).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>{const old=k.filter(x=>x!==C);return Promise.all(old.map(x=>caches.delete(x))).then(()=>self.clients.claim()).then(()=>{
  // upgrading from an older build: reload any open window so a stale page (old index.html / game.js) is replaced right away

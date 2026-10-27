@@ -8,8 +8,8 @@ const puppeteer=require('/workspace/cr-test/node_modules/puppeteer-core');const 
   const sc=cr.height/NG.H;return {left:q.left,right:innerWidth-q.right,bottomGap:innerHeight-q.bottom,top:q.top,w:q.width,cssLeft:cs.left,saved:localStorage.getItem('ngs_bside'),rside:e.classList.contains('rside'),
    hudTextTop:cr.top+(NG.H-58)*sc,state:NG.G.state};});
  console.log(JSON.stringify(r));await p.screenshot({path:'shots/v05-bomb-left.png'});
- const ok=r.cssLeft==='14px'&&!r.rside&&r.saved==='L'&&Math.abs((r.top+r.w/2)/844-.5)<=.06;
+ const ok=r.cssLeft==='12px'&&!r.rside&&r.saved==='L'&&(r.top+r.w/2)/844<.2&&r.w>=44&&r.w<=60;
  function innerHeightGapNeeded(r){return 0;}
- const noOverlap=r.top+r.w<=r.hudTextTop+1e-6||r.top+r.w<r.hudTextTop+1;console.log((ok?'PASS':'FAIL')+' bomb button LEFT 14px, mid-screen (v1.1.1), centre at '+Math.round((r.top+r.w/2)/8.44)+'% height, old RIGHT setting migrated');
+ const noOverlap=r.top+r.w<=r.hudTextTop+1e-6||r.top+r.w<r.hudTextTop+1;console.log((ok?'PASS':'FAIL')+' bomb button LEFT 12px, top-left small (v1.1.3), centre at '+Math.round((r.top+r.w/2)/8.44)+'% height, old RIGHT setting migrated');
  console.log((noOverlap?'PASS':'FAIL')+' no overlap with bottom-left canvas HUD (button bottom '+Math.round(r.top+r.w)+' < HUD text top '+Math.round(r.hudTextTop)+')');
  await b.close();process.exit(ok&&noOverlap?0:1);})();
