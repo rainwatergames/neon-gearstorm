@@ -1,13 +1,13 @@
 // v1.1.4 audio peak check: renders music + heavy SFX through an OfflineAudioContext (the game's real master bus) and reports peak dBFS + samples >= 1.0 (would clip on device).
 // usage: node tools/v114audio.js <url> [label]
 const puppeteer=require('/workspace/cr-test/node_modules/puppeteer-core');const U=process.argv[2]||'http://localhost:8765/';const LABEL=process.argv[3]||'';const RAW=process.argv.includes('--raw');
-const SCEN=[['stage1',0,'normal'],['boss1',1,'heavy'],['stage3',4,'normal'],['boss3',5,'heavy']];
+const SCEN=[['stage1',0,'normal'],['boss1',1,'heavy'],['stage2',2,'normal'],['stage2-heavy',2,'heavy'],['boss2',3,'heavy'],['stage3',4,'normal'],['stage3-heavy',4,'heavy'],['boss3',5,'heavy']];
 (async()=>{const b=await puppeteer.launch({protocolTimeout:600000,executablePath:'/usr/bin/google-chrome',headless:'new',args:['--no-sandbox','--autoplay-policy=no-user-gesture-required']});const out=[];let all=true;
  for(const [name,mode,load] of SCEN){const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.evaluateOnNewDocument(()=>{try{localStorage.setItem('ngs_photo','1');localStorage.setItem('ngs_musv','1');localStorage.setItem('ngs_sfxv','1');}catch(_){}});
   await p.goto(U,{waitUntil:'load'});await new Promise(r=>setTimeout(r,800));
   const r=await p.evaluate(async(mode,load,RAW)=>{const T=24,SR=48000;const oac=new OfflineAudioContext(2,SR*T,SR);let fake=true;Object.defineProperty(oac,'state',{get:()=>fake?'running':'closed'});const realResume=oac.resume.bind(oac);oac.resume=()=>Promise.resolve();
    const Real=window.AudioContext;window.AudioContext=function(){return oac;};window.webkitAudioContext=window.AudioContext;
-   const AU=NG.AU;AU.c=null;AU.muted=false;AU.musV=1;AU.sfxV=1;NG.auInit();window.AudioContext=Real;if(RAW){AU.m.disconnect();AU.m.connect(oac.destination);} // RAW = pre-master mix bus
+   const AU=NG.AU;AU.c=null;AU.muted=false;AU.musV=1;AU.sfxV=1;NG.auInit();window.AudioContext=Real;if(AU.wd){clearInterval(AU.wd);AU.wd=0;}oac.onstatechange=null;if(RAW){AU.m.disconnect();AU.m.connect(oac.destination);} // RAW = pre-master mix bus
 if(AU.timer){clearInterval(AU.timer);}NG.musicStart(mode);clearInterval(AU.timer);AU.timer=1;oac.resume=realResume;
    let osc=0,live=0,maxLive=0;const co=oac.createOscillator.bind(oac),cb=oac.createBufferSource.bind(oac);
    const wrap=n=>{osc++;live++;maxLive=Math.max(maxLive,live);n.addEventListener('ended',()=>{live--;});return n;};oac.createOscillator=()=>wrap(co());oac.createBufferSource=()=>wrap(cb());

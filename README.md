@@ -1,4 +1,4 @@
-# NEON GEARSTORM (working title) — v1.1.4
+# NEON GEARSTORM (working title) — v1.1.5
 
 A neon + steampunk vertical shoot-'em-up for phones (PWA), by **Rainwater Games**.
 Play: https://rainwatergames.github.io/neon-gearstorm/
@@ -7,6 +7,17 @@ Play: https://rainwatergames.github.io/neon-gearstorm/
 - Debug: `?debug=boss` (jump to boss, invincible, max weapon), `?debug=mid`, `?debug=inv`, add `laser`/`tesla`, `autostart`, `stage2`, `boss2`, `stage3`, `boss3`, `s2only` (end the run after boss 2).
 
 © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. See LICENSE — not open source.
+
+## v1.1.5
+- Audio cutting out for good at the end of the Stage 2 boss. It did not reproduce in desktop headless Chrome (the audio stayed on through the boss death, stage clear and Stage 3). The probable phone causes are: (1) the OS suspends or "interrupts" the AudioContext and the old code only resumed it on a NEW touch, so a player holding their finger down got silence for the rest of the run; (2) a single bad (NaN) sample poisons the delay feedback and compressor, which means permanent silence. The old uncapped boss-death barrage made both more likely. Fix: a watchdog every 0.4 s, plus on every context state change. It resumes a suspended or interrupted context with no touch needed. It rebuilds the whole audio graph (and restarts the current music) if the context closes or the output contains a non-finite sample. Paused and backgrounded states are left alone. tools/v115silence.js tests it.
+- Limiter and mix checked on every stage and boss: peaks are -1.6 to -1.8 dBFS with heavy SFX on Stage 1/2/3 and all bosses (tools/v114audio.js, which now includes stage2-heavy, boss2 and stage3-heavy).
+- Stage 3 onboarding:
+  - An intro card (tap to skip) covers the goal and each mechanic.
+  - Tip popups appear for train cars, gantries, the track switch, the tunnel and the boss.
+  - Big arrows mark the first gantry gap ("FLY THROUGH") and the first track switch ("◀ MEDALS" / "SALVAGE ▶", "✕ FENCE").
+  - Boss 3's damageable part glows green and gets a "SHOOT HERE" arrow each time a new weak point opens.
+- Boss 3 HP x0.30 (cars, firebox, smokestack, core). The bot model went from 215-300 s+ to roughly 60-110 s depending on upgrades.
+- BOMB button: a pulsing magenta glow ring (1.0-1.15 scale, 1.2 s) while bombs > 0, a white ping ring on pickup, and grey, dim and still at 0. With REDUCE FLASHING (or OS reduce-motion) it gets a gentle 2.4 s pulse and no ping.
 
 ## v1.1.4
 - Audio distortion fix (reported on Android + headset, Stage 1 and the Stage 1 boss). Cause: the old master bus (-20dB compressor with makeup gain -> x1.25 -> -3dB "limiter" with makeup) took a pre-master mix peaking at about +10.7 dBFS (stacked sub-bass booms/bombs/boss-death explosions, no voice limit) and squashed it to -0.3 dBFS. The limiter pumped hard and bent the low end on every big hit.

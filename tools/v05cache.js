@@ -15,5 +15,5 @@ const NEW=process.argv[2];const U='https://localhost:8771/';const sleep=ms=>new 
  const t0=Date.now();await p.goto(U,{waitUntil:'load'});const first=await p.evaluate(()=>document.getElementById('ver').textContent);
  let v2=null;for(let i=0;i<40;i++){await sleep(250);try{v2=await p.evaluate(()=>({ver:document.getElementById('ver').textContent,code:window.NG&&NG.UPG.some(u=>u.k==='core')?'v1.0':'old',script:[...document.scripts].map(s=>s.getAttribute('src')).filter(s=>s&&/game\.js/.test(s))[0]}));if(v2.ver==='v1.0'&&v2.code==='v1.0')break;}catch(_){}}
  const ms=Date.now()-t0;console.log('first open: initially',first,'-> settled',JSON.stringify(v2),'after',ms,'ms; navigations',navs.length);
- const pass=v1.ver==='v0.4'&&v1.ctrl&&v2&&v2.ver==='v1.1.4'&&v2.code==='v1.0'&&/game\.js\?v=1\.1\.4/.test(v2.script);console.log((pass?'PASS':'FAIL')+' stale v0.4 client (SW + max-age=600 HTTP cache) upgrades to v1.1.4 on the first open');
+ const pass=v1.ver==='v0.4'&&v1.ctrl&&v2&&v2.ver==='v1.1.5'&&v2.code==='v1.0'&&/game\.js\?v=1\.1\.5/.test(v2.script);console.log((pass?'PASS':'FAIL')+' stale v0.4 client (SW + max-age=600 HTTP cache) upgrades to v1.1.5 on the first open');
  await b.close();cp.execSync('rm -rf '+dir);cp.execSync('ln -sfn old /tmp/ngsc/live');process.exit(pass?0:1);})();

@@ -1,4 +1,4 @@
-/*! NEON GEARSTORM v1.1.4 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved.
+/*! NEON GEARSTORM v1.1.5 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved.
  *  Unauthorized copying, distribution or modification of this file is prohibited. */
 (()=>{'use strict';
 // ---- sprites.js : pre-rendered neon/steampunk sprites (glow baked once for speed)
@@ -79,7 +79,8 @@ function auInit(){if(AU.c){if(AU.c.state!=='running'&&G.state!=='pause')AU.c.res
  // master gain .7 -> one fast compressor/limiter (-6dB, 12:1) -> trim -> soft-knee safety clipper with a -1dBFS ceiling -> out
  AU.m=a.createGain();AU.m.gain.value=AU.muted?0:AU.MG;const comp=a.createDynamicsCompressor();comp.threshold.value=-6;comp.knee.value=2;comp.ratio.value=12;comp.attack.value=.002;comp.release.value=.15;
  const trim=a.createGain();trim.gain.value=1;const safe=a.createWaveShaper();{const N=4096,c=new Float32Array(N),C=.86,K=.6;for(let i=0;i<N;i++){const x=i/(N/2)-1,ax=Math.abs(x);c[i]=Math.sign(x)*(ax<=K?ax:K+(C-K)*Math.tanh((ax-K)/(C-K)));}safe.curve=c;safe.oversample='none';}
- AU.m.connect(comp);comp.connect(trim);trim.connect(safe);safe.connect(a.destination);AU.comp=comp;
+ AU.m.connect(comp);comp.connect(trim);trim.connect(safe);safe.connect(a.destination);AU.comp=comp;AU.an=a.createAnalyser();AU.an.fftSize=256;trim.connect(AU.an);
+ if(!AU.wd)AU.wd=setInterval(auWatch,400);a.onstatechange=()=>{if(a.state!=='running')setTimeout(auWatch,60);};
  AU.mus=a.createGain();AU.md=a.createGain();AU.mus.connect(AU.md);AU.md.connect(AU.m);AU.sfx=a.createGain();AU.sfx.connect(AU.m);applyVol(); // md = music duck on big explosions
  AU.duck=a.createGain();AU.duck.connect(AU.mus); // sidechain-style ducked bus (bass, pads, lead)
  // reverb (convolver) shared by music + sfx, gated reverb for snare
@@ -100,6 +101,14 @@ function auInit(){if(AU.c){if(AU.c.state!=='running'&&G.state!=='pause')AU.c.res
   const ci=a.createGain();const cs=a.createWaveShaper();cs.curve=gc;cs.oversample='2x';const cl=a.createBiquadFilter();cl.type='lowpass';cl.frequency.value=1300;cl.Q.value=1.4;const co=a.createGain();co.gain.value=.15;ci.connect(cs);cs.connect(cl);cl.connect(co);co.connect(AU.duck);AU.chug=ci;}
  AU.gcount=0;AU.mcount=[0,0,0,0,0,0];
  const n=a.sampleRate;AU.nb=a.createBuffer(1,n,n);const d=AU.nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}
+// v1.1.5 audio watchdog. Phones can suspend/'interrupt' the context mid-game (headset route change, audio-focus loss, render overload),
+// and one NaN sample (e.g. from an unstable filter) poisons the delay feedback loop + compressor forever = total silence. The old code only resumed on a NEW
+// touch, so a player holding the ship through the boss-2 death -> stage 3 transition got permanent silence. Now: auto-resume, and rebuild the graph on NaN.
+function auWatch(){const a=AU.c;if(!a||document.hidden||(typeof G!=='undefined'&&G.state==='pause'))return;
+ if(a.state==='suspended'||a.state==='interrupted'){AU.heals=(AU.heals||0)+1;try{const pr=a.resume();if(pr&&pr.catch)pr.catch(()=>{});}catch(_){}return;}
+ if(a.state==='closed'){auRebuild();return;}
+ if(AU.an){const d=AU.buf||(AU.buf=new Float32Array(AU.an.fftSize));AU.an.getFloatTimeDomainData(d);for(let i=0;i<d.length;i++)if(!isFinite(d[i])){auRebuild();return;}}}
+function auRebuild(){AU.rebuilds=(AU.rebuilds||0)+1;const old=AU.c,on=AU.on,mode=AU.mode;AU.c=null;AU.act=[];try{if(old&&old.state!=='closed')old.close();}catch(_){}auInit();if(on&&AU.c)musicStart(mode);}
 function applyVol(){if(!AU.mus)return;AU.mus.gain.value=.55*AU.musV*AU.musV;AU.sfx.gain.value=.75*AU.sfxV*AU.sfxV;}
 function setVol(k,v){AU[k]=v;lsSet(k==='musV'?'ngs_musv':'ngs_sfxv',v);applyVol();}
 // generic voices
@@ -385,7 +394,7 @@ function drawBoss2(e){const sh=e.dying?rnd(-4,4):0,x=e.x+sh,y=e.y,fl=e.fl>0&&e.f
 const G3={d:0,spd:3,ev:0,lines:[],tumble:[],morts:[],waves:[],sparks:[],fenceHits:0,ganHits:0,mortHits:0,waveHits:0,ramHits:0,inTun:0};
 const s3y=d=>H-(d-G3.d), s3d=y=>G3.d+(H-y);
 const S3D={hp:3.3,spd:1.35,extra:.45};
-const TUN=[[3950,5350]],BRS=[[2450,3700],[6900,7850]],BOSS3D=8650;
+const TUN=[[3950,5350]],BRS=[[2450,3700],[6900,7850]],BOSS3D=8650,B3HP=.3; // v1.1.5: boss 3 HP x0.30 (was 215-300s+, target 60-90s)
 const GANS=[[1450,[[110,74]]],[1720,[[250,74]]],[1990,[[180,80]]],[6050,[[90,72],[270,72]]],[6300,[[180,76]]],[6550,[[80,72],[280,72]]]];
 function trX(d){return W/2+52*Math.sin(d/520)+24*Math.sin(d/190+1);}
 function brK(d){for(const b of BRS){if(d>b[0]&&d<b[1])return Math.min(1,(d-b[0])/260,(b[1]-d)/260);}return 0;}
@@ -395,24 +404,29 @@ function warning3(){strobe(90);G.banner={t:0,a:'⚠ WARNING ⚠',b:'IRON LOCOMOT
 function tcar(kind,lane,vy){const hp={tur:80,gat:120,flat:70}[kind];return spawn('tcar',laneX(G3.d+H+60,lane||0),-60,{kind,lane:lane||0,vy:vy||1,hp0:hp,cd:40+Math.floor(Math.random()*40)});}
 function convoy(list,lane){list.forEach((k,i)=>later(i*58,()=>{if(G.stage===3)tcar(k,lane);}));}
 function tunDrone(side){const e=spawn('swooper',side<0?40:W-40,-10,{x0:side<0?110:W-110,dir:side,shootAt:40});if(e)e.flashIn=24;}
-const EV3=[[0,()=>{G.banner={t:0,a:'STAGE 3',b:'SPEED RUN — RAIL CHASE'};}],[260,()=>popcorn(6)],[520,()=>convoy(['tur','flat','tur'])],
- [1250,()=>{G.banner={t:110,a:'⚠ SIGNAL GANTRIES — FLY THE GAPS',b:'',small:true,c:COL.am};}],[1500,()=>swoop(-1)],[1850,()=>swoop(1)],
+// v1.1.5 onboarding tips (two-line panel, see s3Tip/s3DrawTip)
+function s3Tip(a,b,c){G3.tip={a,b,c:c||COL.cy,t:0};}
+const EV3=[[0,()=>{G.banner={t:0,a:'STAGE 3',b:'SPEED RUN — RAIL CHASE'};}],[200,()=>s3Tip('SHOOT THE TRAIN CARS','they roll down the track and fire back — gatlings spin up first')],[260,()=>popcorn(6)],
+ [1150,()=>s3Tip('SIGNAL GANTRY AHEAD','solid bars across the track — fly through the bright GAP',COL.am)],[2050,()=>s3Tip('TRACK SWITCH — PICK A SIDE','LEFT: medals + gatling cars · RIGHT: salvage cogs · never touch the middle fence',COL.mg)],
+ [3700,()=>s3Tip('TUNNEL — IT GOES DARK','you only see in your headlight cone · enemies get cyan brackets',COL.li)],[8450,()=>s3Tip('THE IRON LOCOMOTIVE','only the GLOWING part takes damage — rear car first, then firebox + smokestack, then the core',COL.eb)],[520,()=>convoy(['tur','flat','tur'])],
+ [1500,()=>swoop(-1)],[1850,()=>swoop(1)],
  [2200,()=>{G.banner={t:0,a:'◀ RISK  ·  SAFE ▶',b:'TRACK SWITCH — LEFT: MEDALS + GATLING   RIGHT: SALVAGE'};}],[2450,()=>convoy(['gat','tur'],-1)],[3000,()=>convoy(['flat'],1)],
  [3750,()=>{G.banner={t:110,a:'TUNNEL — FOLLOW THE SIGNALS',b:'',small:true,c:COL.cy};}],[4100,()=>tunDrone(-1)],[4300,()=>tunDrone(1)],[4500,()=>convoy(['tur','gat'])],[4900,()=>{tunDrone(-1);tunDrone(1);}],[5150,()=>popcorn(5)],
  [5500,()=>convoy(['gat','flat','tur'])],[6000,()=>popcorn(5)],[6700,()=>{G.banner={t:0,a:'◀ RISK  ·  SAFE ▶',b:'SECOND SWITCH'};}],[6950,()=>convoy(['gat','gat'],-1)],[7350,()=>convoy(['tur'],1)],
  [8000,()=>convoy(['flat','tur'])],[8350,()=>warning3()],[BOSS3D,()=>spawnBoss3()]];
-function s3reset(d){Object.assign(G3,{d:d||0,spd:3,ev:0,tumble:[],morts:[],waves:[],sparks:[],fenceHits:0,ganHits:0,mortHits:0,waveHits:0,ramHits:0,inTun:0});
+function s3reset(d){Object.assign(G3,{tip:null,card:0,d:d||0,spd:3,ev:0,tumble:[],morts:[],waves:[],sparks:[],fenceHits:0,ganHits:0,mortHits:0,waveHits:0,ramHits:0,inTun:0});
  G3.gans=GANS.map(g=>({d:g[0],gaps:g[1]}));G3.items=[];
  for(const b of BRS)for(let dd=b[0]+300;dd<b[1]-300;dd+=60){G3.items.push({d:dd,l:-1,k:'m'});if((dd-b[0])%120===0)G3.items.push({d:dd,l:1,k:'c'});}
  G3.lines=[];for(let i=0;i<26;i++)G3.lines.push({x:rnd(0,W),y:rnd(-200,H),len:rnd(60,170),c:i%3?'cy':'mg',v:rnd(1.6,2.6)});
  EV3.sort((p,q)=>p[0]-q[0]);if(G3.d>0)while(G3.ev<EV3.length&&EV3[G3.ev][0]<G3.d)G3.ev++;}
 function toStage3(){if(G.state!=='play')return;G.stage=3;s3reset(0);G.hold=false;G.boss=null;EB.clear();const bon=G.lives*20000;G.score+=bon;G.shield=G.maxSh;G.hull=Math.min(G.hullM,G.hull+1);
- G.banner={t:0,a:'FOUNDRY CLEARED',b:'+'+bon.toLocaleString()+' · SHIELD FULL · HULL +1'};musicStart(4);G.ev3Delay=170;}
+ G.banner=null;G3.bon=bon;musicStart(4);G.ev3Delay=420;G3.card=1;} // v1.1.5: intro card for ~7s (tap to skip)
 function s3Update(){for(const l of G3.lines){l.y+=G3.spd*l.v*(G.boss?.6:1);if(l.y-l.len>H){l.y=rnd(-120,-10);l.x=rnd(0,W);}}
  for(const s of G3.tumble){s.t++;s.x+=s.vx;s.y+=s.vy;s.vy+=.05;s.rot+=s.vr;if(s.t%4===0)G3.sparks.push({x:s.x,y:s.y+20,vx:rnd(-2,2),vy:rnd(1,4),t:0});if(s.t%25===0)boom(s.x+rnd(-10,10),s.y,1.1,'am');}
  G3.tumble=G3.tumble.filter(s=>s.y<H+120&&s.t<400);
  for(const s of G3.sparks){s.t++;s.x+=s.vx;s.y+=s.vy;}G3.sparks=G3.sparks.filter(s=>s.t<22);
- if(G.ev3Delay>0){G.ev3Delay--;return;}
+ if(G3.tip){G3.tip.t++;if(G3.tip.t>300)G3.tip=null;}
+ if(G.ev3Delay>0){G.ev3Delay--;if(!G.ev3Delay)G3.card=0;return;}
  G3.d+=G3.spd;while(G3.ev<EV3.length&&EV3[G3.ev][0]<=G3.d){EV3[G3.ev][1]();G3.ev++;}
  G3.inTun=tunK(s3d(P.y));
  if(window.NG&&NG.auto)NG.auto();
@@ -453,9 +467,9 @@ function drawCarBody(x,y,rot,kind,fl,spin,scale){ctx.save();ctx.translate(x,y);c
 function drawTcar(e){const fl=e.fl>0&&e.fl%2;if(e.kind==='gat'&&e.t%130>=95){ctx.globalAlpha=.5+.5*Math.sin(G.t*.8);txt('▼ GATLING',e.x,e.y+34,COL.am,8,'center',4);ctx.globalAlpha=1;}drawCarBody(e.x,e.y,e.rot,e.kind,fl,e.spin);}
 // ---------- BOSS 3: IRON LOCOMOTIVE
 const CARS3=[['TURRET CAR','tur',96,620],['DRONE FLATBED','flat',164,560],['GATLING CABOOSE','gat',232,700]];
-function spawnBoss3(){const b=spawn('boss3',W/2,-150,{invT:200,phase:0,ms:0,mt:0,mcd:260,atk:0,hA:0,big:true});G.boss=b;
- b.cars=CARS3.map(c=>{const p=mkPart(b,0,c[2],26,c[3],c[0],'debris');p.kind=c[1];p.cd=60;return p;});
- b.fb=mkPart(b,0,40,22,780,'FIREBOX','debris');b.stk=mkPart(b,0,-46,20,700,'SMOKESTACK','debris');b.parts=[...b.cars,b.fb,b.stk];musicStart(5);G3.spd=1.3;}
+function spawnBoss3(){const b=spawn('boss3',W/2,-150,{hp0:2300*B3HP,invT:200,phase:0,ms:0,mt:0,mcd:260,atk:0,hA:0,big:true});G.boss=b;
+ b.cars=CARS3.map(c=>{const p=mkPart(b,0,c[2],26,Math.round(c[3]*B3HP),c[0],'debris');p.kind=c[1];p.cd=60;return p;});
+ b.fb=mkPart(b,0,40,22,Math.round(780*B3HP),'FIREBOX','debris');b.stk=mkPart(b,0,-46,20,Math.round(700*B3HP),'SMOKESTACK','debris');b.parts=[...b.cars,b.fb,b.stk];musicStart(5);G3.spd=1.3;}
 function b3Rear(e){for(let i=e.cars.length-1;i>=0;i--)if(e.cars[i].act&&!e.cars[i].gone)return e.cars[i];return null;}
 function b3PartDown(pa,q){const nc=pa.cars.filter(c=>c.act&&!c.gone).length;
  if(pa.cars.includes(q)){G3.tumble.push({x:q.x,y:q.y,vx:rnd(-2.5,2.5)||1.5,vy:1.2,rot:q.rot||0,vr:rnd(.04,.09)*(Math.random()<.5?-1:1),kind:q.kind,t:0});sfx.phase();
@@ -521,7 +535,8 @@ function s3DrawBack(){const tk=G.state==='play'?tunK(G3.d+H*.5):0;ctx.fillStyle=
  // mortar targets: amber brackets + shrinking square (never round)
  for(const m of G3.morts){if(m.t<0)continue;const f=Math.max(0,1-m.t/m.T),s=12+26*f;ctx.strokeStyle=(m.t>>2)%2?'#ffb52e':'#fff3c0';ctx.lineWidth=2;ctx.strokeRect(m.x-s,m.y-s,s*2,s*2);ctx.beginPath();ctx.moveTo(m.x-8,m.y-8);ctx.lineTo(m.x+8,m.y+8);ctx.moveTo(m.x+8,m.y-8);ctx.lineTo(m.x-8,m.y+8);ctx.stroke();
   if(m.t<m.T){const sy=m.y-(1-f)*0-f*H*.6;ctx.fillStyle='#ffb52e';ctx.fillRect(m.x-1.5,sy-14,3,14);}}}
-function s3DrawFront(){const k=G3.inTun;
+function s3DrawFront(){s3DrawFront2();s3DrawGuides();s3DrawTip();s3DrawCard();}
+function s3DrawFront2(){const k=G3.inTun;
  if(k>0){ // tunnel darkness with headlight cone (evenodd hole) + neon signals
   ctx.save();ctx.fillStyle='rgba(2,1,8,'+(.88*k).toFixed(3)+')';ctx.beginPath();ctx.rect(0,0,W,H);const cx=P.x,cy=P.y-10;ctx.moveTo(cx-12,cy);ctx.lineTo(cx-120,cy-360);ctx.lineTo(cx+120,cy-360);ctx.lineTo(cx+12,cy);ctx.lineTo(cx+30,cy+40);ctx.lineTo(cx-30,cy+40);ctx.closePath();ctx.fill('evenodd');
   ctx.globalCompositeOperation='lighter';const g=ctx.createLinearGradient(0,cy,0,cy-360);g.addColorStop(0,'rgba(200,240,255,.16)');g.addColorStop(1,'rgba(200,240,255,0)');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(cx-12,cy);ctx.lineTo(cx-120,cy-360);ctx.lineTo(cx+120,cy-360);ctx.lineTo(cx+12,cy);ctx.fill();
@@ -538,6 +553,32 @@ function s3DrawFront(){const k=G3.inTun;
  const b=G.boss;if(b&&b.act&&b.type==='boss3'){
   if(b.ms===1){const a=.35+.35*Math.sin(G.t*.6);ctx.fillStyle='rgba(255,181,46,'+(a*.35).toFixed(3)+')';ctx.fillRect(b.lx-36,b.y+40,72,H);ctx.strokeStyle='#fff3c0';ctx.lineWidth=2;for(let y=b.y+60+(G.t*4)%40;y<H;y+=40){ctx.beginPath();ctx.moveTo(b.lx-16,y);ctx.lineTo(b.lx,y+12);ctx.lineTo(b.lx+16,y);ctx.stroke();}txt('⚠ COWCATCHER RAM ⚠',b.lx,H-60,'#ffb52e',12,'center',6);}
   if(b.ms===5){ctx.setLineDash([4,8]);ctx.strokeStyle='rgba(46,249,255,.55)';ctx.lineWidth=2;for(const g of b.gaps){ctx.beginPath();ctx.moveTo(b.x,b.y);ctx.lineTo(b.x+Math.cos(g)*600,b.y+Math.sin(g)*600);ctx.stroke();}ctx.setLineDash([]);}}}
+// v1.1.5: weak points glow (only unlocked parts / the exposed core take damage) + big arrow on each new weak point
+function b3Weak(e){const w=e.parts.filter(q=>q.act&&!q.gone&&!q.lock);if(!w.length&&!e.lock&&partsAlive(e)===0)w.push(e);return w;}
+function b3DrawWeak(e){if(e.dying||e.y<0)return;const w=b3Weak(e);if(!w.length)return;const pu=.5+.5*Math.sin(G.t*(SET.rf?.08:.16));
+ ctx.save();ctx.globalCompositeOperation='lighter';for(const q of w){const r=(q===e?26:q.r+6)+3*pu;ctx.shadowColor='#39ff9a';ctx.shadowBlur=14+12*pu;ctx.strokeStyle='rgba(57,255,154,'+(.55+.4*pu).toFixed(2)+')';ctx.lineWidth=3;const cy=q.y+(q===e?-6:0);ctx.strokeRect(q.x-r,cy-r,2*r,2*r); // square glow: round shapes are reserved for things that hurt
+  ctx.fillStyle='rgba(57,255,154,'+(.1+.12*pu).toFixed(2)+')';ctx.fillRect(q.x-r,cy-r,2*r,2*r);}ctx.restore();ctx.shadowBlur=0;
+ const id=w.map(q=>q.label||'core').join('+');if(e.wkId!==id){e.wkId=id;e.wkT=0;}e.wkT=(e.wkT||0)+1;
+ if(e.wkT<260&&e.invT<=0){const q=w[0],bob=SET.rf?0:6*Math.sin(G.t*.2),ay=q.y-(q===e?40:q.r+18)-bob;s3Arrow(q.x,ay,'SHOOT HERE','#39ff9a');}}
+function s3Arrow(x,y,label,c){ctx.save();ctx.shadowColor=c;ctx.shadowBlur=12;ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-16,y-20);ctx.lineTo(x-6,y-20);ctx.lineTo(x-6,y-40);ctx.lineTo(x+6,y-40);ctx.lineTo(x+6,y-20);ctx.lineTo(x+16,y-20);ctx.closePath();ctx.fill();ctx.restore();
+ txt(label,clamp(x,50,W-50),y-56,c,12,'center',8);}
+function s3DrawTip(){const tp=G3.tip;if(!tp||G.state!=='play')return;const a=Math.min(1,tp.t/15,(300-tp.t)/30);ctx.globalAlpha=Math.max(0,a);const y=H*.74;
+ ctx.fillStyle='rgba(5,3,12,.78)';ctx.fillRect(14,y,W-28,52);ctx.strokeStyle=tp.c;ctx.lineWidth=1.5;ctx.strokeRect(14,y,W-28,52);txt('TIP · '+tp.a,W/2,y+8,tp.c,14,'center',8);
+ ctx.font='bold 10px "Trebuchet MS",system-ui,sans-serif';const words=tp.b.split(' ');let line='',ly=y+28;const lines=[];for(const wd of words){const t2=line?line+' '+wd:wd;if(ctx.measureText(t2).width>W-48){lines.push(line);line=wd;}else line=t2;}lines.push(line);
+ if(lines.length>1)ly=y+26;for(const l of lines.slice(0,2)){txt(l,W/2,ly,'#e8e8ff',10,'center');ly+=12;}ctx.globalAlpha=1;}
+function s3DrawCard(){if(!G3.card||G.state!=='play'||!(G.ev3Delay>0))return;const a=Math.min(1,(420-G.ev3Delay)/20,G.ev3Delay/20);ctx.globalAlpha=Math.max(0,a);
+ const x=18,y=H*.2,w=W-36,h=300;ctx.fillStyle='rgba(6,4,16,.9)';ctx.fillRect(x,y,w,h);ctx.strokeStyle=COL.cy;ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);
+ txt('FOUNDRY CLEARED  +'+(G3.bon||0).toLocaleString()+' · SHIELD FULL · HULL +1',W/2,y-22,COL.am,12,'center',8);txt('STAGE 3 · RAIL CHASE',W/2,y+12,COL.cy,20,'center',10);txt('GOAL: survive the run, then DERAIL the Iron Locomotive',W/2,y+40,'#fff',10.5,'center');
+ const L=[['▲ TRAIN CARS','roll down the track & shoot back. Kill them.',COL.am],['▤ GANTRIES','block the track. Fly through the bright GAP.',COL.am],['◀▶ SWITCH','track splits: LEFT medals, RIGHT salvage.','#ff3df0'],['','Don\'t touch the fence between the rails.','#ff3df0'],
+  ['◐ TUNNEL','dark. You see only in your headlight.',COL.li],['★ BOSS','shoot only the GLOWING part: rear car,',COL.eb],['','then firebox + smokestack, then the core.',COL.eb],['','Dodge the ram, mortars & whistle ring gaps.',COL.eb]];
+ let yy=y+66;for(const l of L){if(l[0])txt(l[0],x+12,yy,l[2],11,'left',4);txt(l[1],x+96,yy,'#d8d8f0',10,'left');yy+=24;}
+ txt((G.t>>4)%2?'TAP TO START':'',W/2,y+h-22,'#fff',12,'center',6);ctx.globalAlpha=1;}
+// first track switch + first gantry: big arrows on the split / the gap
+function s3DrawGuides(){if(G.state!=='play'||G.boss)return;const sw=BRS[0],ys=s3y(sw[0]+120);
+ if(G3.d>sw[0]-900&&G3.d<sw[0]+200&&ys>60&&ys<H-40){const xl=laneX(sw[0]+600,-1),xr=laneX(sw[0]+600,1),bob=SET.rf?0:5*Math.sin(G.t*.2);
+  for(const [xx,lb,c] of [[xl,'◀ MEDALS','#ff3df0'],[xr,'SALVAGE ▶',COL.am]]){ctx.save();ctx.translate(xx,ys-bob);ctx.shadowColor=c;ctx.shadowBlur=14;ctx.fillStyle=c;ctx.beginPath();ctx.moveTo(0,-34);ctx.lineTo(-18,-8);ctx.lineTo(-7,-8);ctx.lineTo(-7,16);ctx.lineTo(7,16);ctx.lineTo(7,-8);ctx.lineTo(18,-8);ctx.closePath();ctx.fill();ctx.restore();txt(lb,clamp(xx,46,W-46),ys+22,c,11,'center',6);}
+  const fx=trX(sw[0]+400);txt('✕ FENCE',fx,ys-64,COL.eb,11,'center',6);}
+ const g0=G3.gans[0];if(g0){const gy=s3y(g0.d);if(gy>70&&gy<H-60&&G3.d<g0.d+50){for(const gp of g0.gaps){const bob=SET.rf?0:5*Math.sin(G.t*.2);ctx.save();ctx.shadowColor='#39ff9a';ctx.shadowBlur=14;ctx.strokeStyle='#39ff9a';ctx.lineWidth=3;ctx.strokeRect(gp[0]-gp[1]/2+6,gy-12,gp[1]-12,24);ctx.restore();s3Arrow(gp[0],gy+14-bob-10+0,'FLY THROUGH','#39ff9a');}}}}
 function drawBoss3(e){const sh=e.dying?rnd(-3,3):0,x=e.x+sh,y=e.y,fl=e.fl>0&&e.fl%2;
  // couplings + cars (rear to front)
  for(const c of e.cars){if(!c.act||c.gone)continue;ctx.strokeStyle='#8f7bff';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y+56);ctx.lineTo(c.x,c.y-30);ctx.stroke();drawCarBody(c.x,c.y,c.rot,c.kind,c.fl>0&&c.fl%2,c.kind==='gat'?(e.t%130>=95?1:.6):0);
@@ -557,10 +598,10 @@ function drawBoss3(e){const sh=e.dying?rnd(-3,3):0,x=e.x+sh,y=e.y,fl=e.fl>0&&e.f
  // whistle
  ctx.fillStyle=e.ms===5?'#fff':'#c9d2ff';ctx.fillRect(10,-30,6,12);
  ctx.restore();
- if(e.ms===5){txt('WHISTLE',x,y-100,COL.cy,10,'center',6);}}
+ if(e.ms===5){txt('WHISTLE',x,y-100,COL.cy,10,'center',6);}b3DrawWeak(e);}
 
 // ---- main.js : game loop, entities, stage script
-const VERSION='v1.1.4';
+const VERSION='v1.1.5';
 const Q=new URLSearchParams(location.search);
 const DBG=(Q.get('debug')||'').split(',');
 const DBG_BOSS=DBG.includes('boss'),DBG_MID=DBG.includes('mid'),DBG_INV=DBG.includes('inv'),DBG_S2=DBG.includes('stage2'),DBG_B2=DBG.includes('boss2'),DBG_S3=DBG.includes('stage3'),DBG_B3=DBG.includes('boss3'); // v0.3: ?debug=boss no longer silently grants invincibility (root cause of 'red bullets did no damage')
@@ -786,14 +827,16 @@ const keys={};let drag=null;
 addEventListener('keydown',e=>{keys[e.code]=true;if(['Space','KeyX','KeyB'].includes(e.code)){bomb();e.preventDefault();}if(e.code==='KeyP'||e.code==='Escape')togglePause();if(e.code==='KeyM')toggleMute();if(e.code==='Enter'&&G.state==='title')startGame();if(e.code.startsWith('Arrow'))e.preventDefault();});
 addEventListener('keyup',e=>{keys[e.code]=false;});
 const PTRS=new Set();
-addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('button,.ov'))return;auInit();PTRS.add(e.pointerId);if(!drag)drag={id:e.pointerId,x:e.clientX,y:e.clientY};});
+addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('button,.ov'))return;auInit();if(G.stage===3&&G3.card&&G.ev3Delay>30)G.ev3Delay=30;PTRS.add(e.pointerId);if(!drag)drag={id:e.pointerId,x:e.clientX,y:e.clientY};});
 addEventListener('pointermove',e=>{if(!drag||drag.id!==e.pointerId)return;const k=SET.sens*MF.sp*(PTRS.size>=2?.45:1),dx=(e.clientX-drag.x)/SC*k,dy=(e.clientY-drag.y)/SC*k;drag.x=e.clientX;drag.y=e.clientY;
  if(G.state==='play'&&P.dead<=0){P.x=clamp(P.x+dx,10,W-10);P.y=clamp(P.y+dy,20,H-16);P.bank+=dx*.15;}});
 const endDrag=e=>{PTRS.delete(e.pointerId);if(drag&&drag.id===e.pointerId)drag=null;};addEventListener('pointerup',endDrag);addEventListener('pointercancel',endDrag);
 // ---------- UI
 const $=id=>document.getElementById(id);
 function show(id){for(const o of['title','pause','over','clear','settings','photo','hangar'])$(o).classList.toggle('hide',o!==id);$('hud').classList.toggle('hide',!(G.state==='play'||G.state==='pause'));}
-function updHud(){$('bBomb').textContent='BOMB ×'+G.bombs;$('bBomb').classList.toggle('empty',G.bombs<=0);}
+function updHud(){const b=$('bBomb');b.textContent='BOMB ×'+G.bombs;b.classList.toggle('empty',G.bombs<=0);b.classList.toggle('ready',G.bombs>0); // v1.1.5: pulsing glow ring when bombs are available
+ document.body.classList.toggle('rm',!!SET.rf);}
+function bombPing(){const b=$('bBomb');b.classList.remove('ping');void b.offsetWidth;b.classList.add('ping');clearTimeout(bombPing.t);bombPing.t=setTimeout(()=>b.classList.remove('ping'),750);}
 function togglePause(){if(G.state==='play'){G.state='pause';show('pause');if(AU.c)AU.c.suspend();}else if(G.state==='pause'){G.state='play';show(null);if(AU.c)AU.c.resume();}}
 function toggleMute(){setMute(!AU.muted);$('bMute').textContent=AU.muted?'♪̸':'♪';try{localStorage.setItem('ngs_mute',AU.muted?1:0);}catch(_){}}
 function applyMeta(){MF.fr=1/(1+.25*UL('fire'));MF.dm=1+.25*UL('dmg');MF.mag=40+35*UL('magnet');MF.sp=1+.1*UL('speed');}
@@ -818,7 +861,7 @@ function rfLabel(){for(const id of['sRF','pRF']){$(id).textContent='REDUCE FLASH
 function wireSettings(){const m=$('sMus'),f=$('sSfx'),se=$('sSens');m.value=AU.musV;f.value=AU.sfxV;se.value=SET.sens;$('sSensV').textContent=SET.sens.toFixed(1);
  m.oninput=()=>setVol('musV',+m.value);f.oninput=()=>{setVol('sfxV',+f.value);auInit();sfx.power();};se.oninput=()=>{SET.sens=+se.value;lsSet('ngs_sens',SET.sens);$('sSensV').textContent=SET.sens.toFixed(1);};
  const bsl=()=>{$('sBS').textContent='BOMB BUTTON: '+(SET.bside==='R'?'RIGHT':'LEFT');$('bBomb').classList.toggle('rside',SET.bside==='R');};$('sBS').onclick=()=>{SET.bside=SET.bside==='R'?'L':'R';lsSet('ngs_bside',SET.bside);bsl();};bsl();
- const tg=()=>{SET.rf=!SET.rf;lsSet('ngs_rf',SET.rf?1:0);if(SET.rf){G.flash=0;FX.strobe=0;}rfLabel();};$('sRF').onclick=tg;$('pRF').onclick=tg;rfLabel();
+ const tg=()=>{SET.rf=!SET.rf;lsSet('ngs_rf',SET.rf?1:0);if(SET.rf){G.flash=0;FX.strobe=0;}rfLabel();document.body.classList.toggle('rm',SET.rf);};$('sRF').onclick=tg;$('pRF').onclick=tg;rfLabel();
  const open=from=>{setFrom=from;show('settings');};$('bSet1').onclick=()=>open('title');$('bSet2').onclick=()=>open('pause');$('bSetBack').onclick=()=>show(setFrom);
  $('bPhotoOk').onclick=()=>{lsSet('ngs_photo',1);show('title');};}
 function hiSave(){if(G.score>G.hi){G.hi=G.score;try{localStorage.setItem('ngs_hi',G.hi);}catch(_){}}}
@@ -882,7 +925,7 @@ function update(){G.t++;
   if(P.dead<=0){const dx=b.x-P.x,dy=b.y-P.y,rr=b.r+6;if(dx*dx+dy*dy<rr*rr){G.hitBy=b.big?'bigbullet':'bullet';if(playerHit())b.act=false;}}}
  // pickups
  for(const u of PU.a){if(!u.act)continue;u.t++;u.y+=.75;u.x+=Math.sin(u.t*.05)*.6;if(u.t%90===0&&!u.bomb&&!u.rep)u.w=(u.w+1)%3;if(u.y>H+20){u.act=false;continue;}
-  if(P.dead<=0){const dx=u.x-P.x,dy=u.y-P.y;if(dx*dx+dy*dy<22*22){u.act=false;sfx.power();if(u.rep){if(G.hull<G.hullM){G.hull++;G.banner={t:100,a:'+1 HULL REPAIR',b:'',small:true,c:'#ffb52e'};}else{G.shield=G.maxSh;G.score+=2000;G.banner={t:100,a:'HULL FULL · +2000',b:'',small:true,c:'#ffb52e'};}part(1,P.x,P.y,0,0,16,18,'am');continue;}if(u.bomb){G.bombs=Math.min(bombCap()+1,G.bombs+1);updHud();G.banner={t:100,a:'+1 BOMB',b:'',small:true,c:COL.mg};continue;}if(u.w===G.weapon){if(G.lvl<lvlCap())G.lvl++;else G.score+=5000;}else G.weapon=u.w;
+  if(P.dead<=0){const dx=u.x-P.x,dy=u.y-P.y;if(dx*dx+dy*dy<22*22){u.act=false;sfx.power();if(u.rep){if(G.hull<G.hullM){G.hull++;G.banner={t:100,a:'+1 HULL REPAIR',b:'',small:true,c:'#ffb52e'};}else{G.shield=G.maxSh;G.score+=2000;G.banner={t:100,a:'HULL FULL · +2000',b:'',small:true,c:'#ffb52e'};}part(1,P.x,P.y,0,0,16,18,'am');continue;}if(u.bomb){G.bombs=Math.min(bombCap()+1,G.bombs+1);updHud();bombPing();G.banner={t:100,a:'+1 BOMB',b:'',small:true,c:COL.mg};continue;}if(u.w===G.weapon){if(G.lvl<lvlCap())G.lvl++;else G.score+=5000;}else G.weapon=u.w;
    G.banner={t:100,a:WEAP[G.weapon].n+' LV'+G.lvl,b:'',small:true,c:WEAP[G.weapon].c};part(1,P.x,P.y,0,0,18,22,WEAP[G.weapon].d);}}}
  // salvage cogs (magnet)
  for(const c of CG.a){if(!c.act)continue;c.t++;c.vx*=.95;c.vy=Math.min(1.4,c.vy+.06);const dx=P.x-c.x,dy=P.y-c.y,d=Math.hypot(dx,dy);
@@ -1003,7 +1046,7 @@ function boot(){resize();addEventListener('resize',resize);buildSprites();buildB
  if('serviceWorker'in navigator&&(location.protocol==='https:'||DBG.includes('sw'))){navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{});
   let had=!!navigator.serviceWorker.controller;navigator.serviceWorker.addEventListener('controllerchange',()=>{if(had&&!window.__ngsRl){window.__ngsRl=1;if(G.state==='title'||G.state==='photo')location.reload();else verToast();}had=true;});}
  verCheck();
- window.NG={AU,auInit,musicTick,musicStart,sfx,hurtE:hurt,G3,toStage3,spawnBoss3,s3reset,s3d,s3y,trX,laneX,brK,tunK,BOSS3D,get H(){return H;},spawnTarget:()=>{const e=spawn('block',W/2,200,{d:s2d(200),r:90,hp0:1e7,glass:false,seed:1,sc:0});return e;},s2reset,spawnBoss2,G2,s2span,s2solid,s2d,s2y,flameState,flameOrigin,gearX,toStage2,kill,hurt,AU,FX,SET,G,P,EN,EB,PB,PT,CG,MD,META,UPG,buy,openHangar,playerHit,eShot,bomb,startGame,spawn,DEF,PU,dropRepair,togglePause,step:n=>{for(let i=0;i<n;i++)update();},counts:()=>({en:EN.count(),eb:EB.count(),pb:PB.count(),pt:PT.count()})};}
+ window.NG={AU,auInit,musicTick,musicStart,sfx,hurtE:hurt,G3,toStage3,spawnBoss3,s3reset,s3d,s3y,trX,laneX,brK,tunK,BOSS3D,get H(){return H;},spawnTarget:()=>{const e=spawn('block',W/2,200,{d:s2d(200),r:90,hp0:1e7,glass:false,seed:1,sc:0});return e;},s2reset,spawnBoss2,G2,s2span,s2solid,s2d,s2y,flameState,flameOrigin,gearX,toStage2,kill,hurt,AU,FX,SET,G,P,EN,EB,PB,PT,CG,MD,META,UPG,buy,openHangar,playerHit,eShot,bomb,startGame,spawn,DEF,PU,dropRepair,togglePause,updHud,bombPing,step:n=>{for(let i=0;i<n;i++)update();},counts:()=>({en:EN.count(),eb:EB.count(),pb:PB.count(),pt:PT.count()})};}
 // v0.5 update check: version.json is fetched with no-store; newer build -> reload once (title) or show a tap-to-update toast
 function verNum(v){return parseFloat(String(v).replace(/^v/,''))||0;}
 function verToast(){if(document.getElementById('updT'))return;const d=document.createElement('button');d.id='updT';d.textContent='NEW VERSION — TAP TO UPDATE';d.style.cssText='position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:99;background:#ff2e88;color:#fff;border:2px solid #fff;border-radius:8px;padding:10px 14px;font:bold 13px Trebuchet MS,sans-serif;letter-spacing:.08em;box-shadow:0 0 18px #ff2e88';d.onclick=()=>location.reload();document.body.appendChild(d);}
