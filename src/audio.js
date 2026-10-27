@@ -20,6 +20,15 @@ function auInit(){if(AU.c){if(AU.c.state!=='running'&&G.state!=='pause')AU.c.res
  AU.dly=a.createDelay(1);AU.dly.delayTime.value=.375;const fb=a.createGain();fb.gain.value=.38;const dl=a.createBiquadFilter();dl.type='lowpass';dl.frequency.value=2600;AU.dly.connect(dl);dl.connect(fb);fb.connect(AU.dly);const dw=a.createGain();dw.gain.value=.45;dl.connect(dw);dw.connect(AU.duck);
  // distortion for boss bass
  AU.dist=a.createWaveShaper();const cu=new Float32Array(1024);for(let i=0;i<1024;i++){const x=i/512-1;cu[i]=Math.tanh(x*6)*.8;}AU.dist.curve=cu;AU.dist.oversample='2x';const dg=a.createGain();dg.gain.value=.55;AU.dist.connect(dg);dg.connect(AU.duck);
+ // v0.5 GUITAR RIG: pre-gain -> hard-clip waveshaper -> auto-wah bandpass (LFO) + cab lowpass -> duck bus (+delay/reverb sends)
+ {const gi=a.createGain();gi.gain.value=1;const hp=a.createBiquadFilter();hp.type='highpass';hp.frequency.value=120;const ws=a.createWaveShaper();const gc=new Float32Array(2048);for(let i=0;i<2048;i++){const x=i/1024-1;gc[i]=Math.sign(x)*(1-Math.exp(-Math.abs(x)*28))*.7;}ws.curve=gc;ws.oversample='4x';
+  const wah=a.createBiquadFilter();wah.type='peaking';wah.frequency.value=1100;wah.Q.value=3;wah.gain.value=14;const lfo=a.createOscillator();lfo.frequency.value=1.6;const lg=a.createGain();lg.gain.value=700;lfo.connect(lg);lg.connect(wah.frequency);lfo.start();
+  const cab=a.createBiquadFilter();cab.type='lowpass';cab.frequency.value=4800;cab.Q.value=.9;const mid=a.createBiquadFilter();mid.type='peaking';mid.frequency.value=650;mid.gain.value=-5;const out=a.createGain();out.gain.value=.16;
+  gi.connect(hp);hp.connect(ws);ws.connect(wah);wah.connect(mid);mid.connect(cab);cab.connect(out);out.connect(AU.duck);const sd=a.createGain();sd.gain.value=.35;out.connect(sd);sd.connect(AU.dly);const sr=a.createGain();sr.gain.value=.4;out.connect(sr);sr.connect(AU.rev);
+  AU.gtr=gi;AU.gtrOut=out;AU.wah=wah;
+  // palm-mute chug rig: separate shaper, dark cab
+  const ci=a.createGain();const cs=a.createWaveShaper();cs.curve=gc;cs.oversample='2x';const cl=a.createBiquadFilter();cl.type='lowpass';cl.frequency.value=1300;cl.Q.value=1.4;const co=a.createGain();co.gain.value=.2;ci.connect(cs);cs.connect(cl);cl.connect(co);co.connect(AU.duck);AU.chug=ci;}
+ AU.gcount=0;AU.mcount=[0,0,0,0];
  const n=a.sampleRate;AU.nb=a.createBuffer(1,n,n);const d=AU.nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}
 function applyVol(){if(!AU.mus)return;AU.mus.gain.value=.55*AU.musV*AU.musV;AU.sfx.gain.value=.75*AU.sfxV*AU.sfxV;}
 function setVol(k,v){AU[k]=v;lsSet(k==='musV'?'ngs_musv':'ngs_sfxv',v);applyVol();}
@@ -45,6 +54,7 @@ const sfx={
   sub(110,28,1.6,.9,t+.05);tone('sawtooth',300,30,1.2,.22,null,t,1800);noise(1.6,.55,'lowpass',2600,80,null,t+.05,0,AU.srev);   // boom + sub drop
   tone('sine',60,22,2.2,.6,null,t+.3);},
  hit(){if(!AU.c)return;const t=AU.c.currentTime;tone('square',1400,180,.16,.22,null,t,4000);tone('sawtooth',300,60,.22,.25,null,t,1500);noise(.09,.35,'highpass',2500,2500,null,t);sub(120,40,.2,.6,t);},
+ crack(){if(!AU.c)return;const t=AU.c.currentTime;noise(.05,.6,'highpass',3000,1800,null,t);noise(.22,.45,'bandpass',900,300,null,t+.01);tone('square',220,45,.3,.35,null,t,1200);sub(90,30,.35,.8,t);},
  cog(){if(!AU.c)return;const t=AU.c.currentTime;if(t-(AU.lastCog||0)<.05)return;AU.lastCog=t;tone('triangle',1900,2400,.05,.04,null,t);},
  medal(n){if(!AU.c)return;const t=AU.c.currentTime,m=84+Math.min(n,7)*2;tone('square',mf(m),mf(m),.07,.05,null,t,5000);tone('triangle',mf(m+7),mf(m+7),.1,.05,null,t+.05);},
  deny(){if(!AU.c)return;const t=AU.c.currentTime;tone('square',160,120,.15,.08,null,t,900);},
@@ -54,6 +64,24 @@ const sfx={
  bossDie(){if(!AU.c)return;const t=AU.c.currentTime;sub(100,20,3,1,t);noise(3,.6,'lowpass',4000,60,null,t,0,AU.srev);tone('sawtooth',200,25,2.5,.3,null,t,1500);[0,.2,.45,.7].forEach(d=>sfx.boomAt(t+d));},
  boomAt(t){sub(140,30,.5,.5,t);noise(.5,.35,'lowpass',2500,150,null,t);}
 };
+// v0.5 guitar voice: saw+square pair into the rig. o: {bend:semis from below, vib:depth, dive:semis to drop, sq:pinch squeal}
+function gtr(m,dur,t,o){const a=AU.c;if(!a||!AU.gtr)return;o=o||{};AU.gcount++;const f=mf(m),g=a.createGain(),o1=a.createOscillator(),o2=a.createOscillator();o1.type='sawtooth';o2.type='square';
+ const st=o.bend?f*Math.pow(2,-o.bend/12):f;for(const os of[o1,o2]){os.frequency.setValueAtTime(st,t);if(o.bend)os.frequency.exponentialRampToValueAtTime(f,t+Math.min(dur*.4,.12));
+  if(o.dive){os.frequency.setValueAtTime(f,t+dur*.45);os.frequency.exponentialRampToValueAtTime(f*Math.pow(2,-o.dive/12),t+dur);}}
+ o2.detune.value=7;if(o.vib){const l=a.createOscillator(),lg=a.createGain();l.frequency.value=o.sq?7.5:5.8;lg.gain.setValueAtTime(0,t);lg.gain.linearRampToValueAtTime(f*.03*o.vib,t+dur*.5);l.connect(lg);lg.connect(o1.frequency);lg.connect(o2.frequency);l.start(t);l.stop(t+dur+.05);}
+ const v=o.sq?.5:.42;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.006);g.gain.setValueAtTime(v*.85,t+dur*.8);g.gain.exponentialRampToValueAtTime(.001,t+dur+.08);
+ o1.connect(g);o2.connect(g);g.connect(AU.gtr);o1.start(t);o2.start(t);o1.stop(t+dur+.1);o2.stop(t+dur+.1);
+ if(o.sq){const h=a.createOscillator(),hg=a.createGain();h.type='sawtooth';h.frequency.setValueAtTime(f*3,t);h.frequency.exponentialRampToValueAtTime(f*3.06,t+dur);hg.gain.setValueAtTime(.0001,t);hg.gain.linearRampToValueAtTime(.18,t+.02);hg.gain.exponentialRampToValueAtTime(.001,t+dur);h.connect(hg);hg.connect(AU.gtr);h.start(t);h.stop(t+dur+.05);}}
+function chug(m,dur,t,acc){const a=AU.c;if(!a||!AU.chug)return;AU.gcount++;const g=a.createGain(),o=a.createOscillator(),o2=a.createOscillator();o.type='sawtooth';o2.type='sawtooth';o.frequency.value=mf(m);o2.frequency.value=mf(m+7);o2.detune.value=-6;
+ g.gain.setValueAtTime(acc?.55:.4,t);g.gain.exponentialRampToValueAtTime(.002,t+dur);o.connect(g);o2.connect(g);g.connect(AU.chug);o.start(t);o2.start(t);o.stop(t+dur+.02);o2.stop(t+dur+.02);}
+// deterministic shred: minor-pentatonic random walk seeded by step
+const PENT=[0,3,5,7,10,12,15,17,19,22,24];
+function shred(root,s,st,barN,t,sp){const r=((s*2654435761)>>>0)%1000/1000,bar4=barN%4;
+ if(bar4===3&&st===8){gtr(root+36,sp*8,t,{vib:1,dive:24});return;}          // dive bomb at end of phrase
+ if(bar4===3&&st>8)return;
+ if(st===0&&bar4===1){gtr(root+31,sp*4,t,{bend:2,vib:1.4,sq:1});return;}     // pinch-harmonic squeal
+ if(bar4===1&&st<4)return;
+ if(st%2===1&&r<.25)return;const i=Math.floor((Math.sin(s*.7)*.5+.5)*PENT.length*.999);gtr(root+24+PENT[i],sp*(st%4===0?1.6:.95),t,{bend:st%8===0?1:0,vib:st%8===0?.7:0});}
 // ---------- music: 16th-step sequencer, song sections, beat clock
 const mf=n=>440*Math.pow(2,(n-69)/12);
 // main: A minor  i-VI-III-VII ; boss: D minor i-VI-iv-V
@@ -66,9 +94,11 @@ const SONGS=[{bpm:124,dark:1,ch:[[57,60,64],[53,57,60],[58,62,65],[56,59,64]],ro
 const tr=(h,k)=>h.map(x=>[x[0],x[1]+k,x[2]]);
 // v0.4 stage 2: E phrygian grind, slower + heavier ; boss 2: C# minor, fast
 SONGS.push({bpm:112,dark:1,ch:[[52,55,59],[53,57,60],[52,55,59],[50,53,57]],root:[40,41,40,38],hook:tr(HOOK,-5),
- sec:[['intro',4,'k p lf'],['grind',8,'k b h s p lf'],['verse',8,'k b h s a p'],['chorus',8,'k b h s a p l c o'],['break',4,'p lf S'],['drop',8,'k b h s a p l c o r']]});
+ sec:[['intro',4,'k p lf G'],['grind',8,'k b h s p G'],['verse',8,'k b h s a p G'],['chorus',8,'k b h s p c o g G'],['solo',8,'k b h s p G Q r'],['break',4,'p lf S'],['drop',8,'k b h s a p g c o r G']]});
 SONGS.push({bpm:164,boss:1,ch:[[61,64,68],[57,61,64],[54,57,61],[56,60,63]],root:[37,45,42,44],hook:tr(BHOOK,-1),
- sec:[['siren',4,'S k'],['heavy',8,'k b h s a o'],['hook',8,'k b h s a l o r'],['break',2,'S p'],['hook',8,'k b h s a l o r c']]});
+ sec:[['siren',4,'S k G'],['heavy',8,'k b h s o G'],['hook',8,'k b h s g o r G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['hook',8,'k b h s a g o r c G'],['solo',8,'k b h s o G Q']]});
+// stage-1 boss also gets the guitars + a solo
+SONGS[1].sec=[['siren',4,'S k'],['heavy',8,'k b h s a o G'],['hook',8,'k b h s a l o r G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['hook',8,'k b h s a g o r c G']];
 function songLen(s){let n=0;for(const x of s.sec)n+=x[1];return n;}
 function musicStart(mode){AU.mode=mode||0;const s=SONGS[AU.mode];AU.bpm=s.bpm;AU.sp=60/s.bpm/4;if(!AU.c)return;AU.step=0;AU.next=AU.c.currentTime+.08;AU.origin=AU.next;if(AU.dly)AU.dly.delayTime.value=AU.sp*3;if(!AU.timer)AU.timer=setInterval(musicTick,25);AU.on=true;}
 function musicStop(){AU.on=false;}
@@ -100,6 +130,12 @@ function musicTick(){const a=AU.c;if(!a||!AU.on||a.state!=='running')return;cons
   if(has('c')&&(st===2||st===10||st===14))for(const n of ch)tone('sawtooth',mf(n+12),mf(n+12),sp*1.2,.03,D,t,3200,0,AU.rev);
   // LEAD hook: two detuned saws + square, with delay + reverb
   if(has('l')||has('lf')){const pos=(barN%4)*16+st;for(const h of song.hook)if(h[0]===pos){const f=mf(h[1]+(has('lf')?-12:0)),d=sp*h[2];tone('sawtooth',f,f,d,.07,D,t,has('lf')?1400:5000,.01,AU.dly);tone('sawtooth',f*1.007,f*1.007,d,.05,D,t,4200,.01,AU.rev);tone('square',f*2,f*2,d*.6,.015,D,t,3000);}}
+  // v0.5 GUITARS: G = palm-muted gallop chugs, g = lead guitar doubling the hook (bends/vibrato/squeal), Q = shred solo with dive bombs
+  if(has('G')){const gal=boss?[0,2,3,4,6,7,8,10,11,12,14,15]:[0,2,3,6,8,10,11,14];if(gal.indexOf(st)>=0)chug(root-12+(st===14&&lastBar?1:0),sp*(st%4===0?.9:.55),t,st%4===0);
+   if(st===0&&sx.bi%2===0)gtr(root+(boss?12:7),sp*3,t,{vib:.6});}
+  if(has('g')){const pos=(barN%4)*16+st;for(const h of song.hook)if(h[0]===pos){const d=sp*h[2],long=h[2]>=4;gtr(h[1]-12+(boss?0:0),d,t,{bend:h[2]>=3?2:0,vib:long?1:0,sq:long&&pos===song.hook[song.hook.length-1][0]});}}
+  if(has('Q'))shred(root,s,st,barN,t,sp);
+  AU.mcount[AU.mode]++;
   // crash / riser
   if(has('r')&&sx.bi===0&&st===0)noise(1.6,.22,'highpass',5000,3000,M,t,0,AU.rev);
   if(lastBar&&st===0&&(has('k'))){const n=noise(sp*16,.12,'bandpass',400,6000,M,t,2);}

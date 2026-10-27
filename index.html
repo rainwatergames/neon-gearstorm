@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- NEON GEARSTORM v0.4 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. -->
+<!-- NEON GEARSTORM v1.0 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. -->
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="author" content="Rainwater Games - Jeff Rainwater">
@@ -20,6 +20,7 @@ canvas{display:block;touch-action:none}
 @keyframes d{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-10px);opacity:1}}
 .ov{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(ellipse at center,rgba(5,3,12,.35),rgba(5,3,12,.85))}
 .hide{display:none!important}
+.up.bigt{border-color:#ff2e88!important;box-shadow:0 0 10px rgba(255,46,136,.45)}.up.bigt .un{color:#ff8ad0}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:280px;margin:10px 0;font-size:13px;letter-spacing:.2em;color:#e6feff;text-shadow:0 0 6px #2ef9ff}
 .row .lb{width:96px;text-align:left}.row input{flex:1;accent-color:#ff3df0}.tog.on{border-color:#a6ff3a;text-shadow:0 0 8px #a6ff3a}
 #settings .btn,#photo .btn{margin-top:10px}
@@ -42,8 +43,9 @@ h2{font-size:38px;margin:0 0 10px;letter-spacing:.12em}
 #hud button{position:fixed;z-index:10;font:inherit;font-weight:bold;color:#fff;background:rgba(5,3,12,.45);cursor:pointer}
 #bPause,#bMute{top:max(8px,env(safe-area-inset-top));width:38px;height:34px;border:1.5px solid #2ef9ff;border-radius:8px;box-shadow:0 0 8px rgba(46,249,255,.5);font-size:14px}
 #bPause{right:10px}#bMute{right:56px}
-#bBomb{right:14px;bottom:max(16px,env(safe-area-inset-bottom));width:78px;height:78px;border-radius:50%;border:2px solid #ff3df0;box-shadow:0 0 14px rgba(255,61,240,.7),inset 0 0 14px rgba(255,61,240,.35);font-size:12px;letter-spacing:.08em;text-shadow:0 0 6px #ff3df0;opacity:.85}
+#bBomb{left:14px;right:auto;bottom:calc(104px + env(safe-area-inset-bottom,0px));width:78px;height:78px;border-radius:50%;border:2px solid #ff3df0;box-shadow:0 0 14px rgba(255,61,240,.7),inset 0 0 14px rgba(255,61,240,.35);font-size:12px;letter-spacing:.08em;text-shadow:0 0 6px #ff3df0;opacity:.85}
 #bBomb.empty{opacity:.3}
+#bBomb.rside{right:14px;left:auto}
 #bPause,#bMute{box-shadow:0 0 calc(6px + 12px*var(--p,0)) rgba(46,249,255,.6)}#bBomb{box-shadow:0 0 calc(10px + 18px*var(--p,0)) rgba(255,61,240,.75),inset 0 0 14px rgba(255,61,240,.35)}
 .pulse{animation:none;box-shadow:0 0 calc(12px + 18px*var(--p,0)) rgba(46,249,255,.7),inset 0 0 12px rgba(46,249,255,.3)}
 #hangar{justify-content:flex-start;background:rgba(5,3,12,.96);padding-top:max(18px,env(safe-area-inset-top))}
@@ -59,7 +61,7 @@ h2{font-size:38px;margin:0 0 10px;letter-spacing:.12em}
 <div id="splash"><div class="sp-t">RAINWATER GAMES</div><div class="dots"><i></i><i></i><i></i></div><div class="sp-t" style="font-size:10px;color:#889;text-shadow:none">LOADING</div></div>
 <canvas id="c"></canvas>
 <div id="hud" class="hide"><button id="bMute" aria-label="Mute">♪</button><button id="bPause" aria-label="Pause">II</button><button id="bBomb" aria-label="Bomb">BOMB</button></div>
-<div id="title" class="ov hide"><div class="ver" id="ver">v0.4</div>
+<div id="title" class="ov hide"><div class="ver" id="ver">v1.0</div>
  <svg class="gear" viewBox="-50 -50 100 100"><g fill="none" stroke="#ffb52e" stroke-width="4"><path d="M-6-46h12l2 10 8 3 8-6 9 8-6 9 3 8 10 2v12l-10 2-3 8 6 8-9 9-8-6-8 3-2 10h-12l-2-10-8-3-8 6-9-9 6-8-3-8-10-2v-12l10-2 3-8-6-9 9-8 8 6 8-3z"/><circle r="16" stroke="#2ef9ff"/><circle r="5" fill="#ff3df0" stroke="none"/></g></svg>
  <h1 class="logo"><span class="a">NEON</span><span class="b">GEARSTORM</span></h1>
  <div class="prod">A RAINWATER GAMES PRODUCTION</div>
@@ -76,6 +78,7 @@ h2{font-size:38px;margin:0 0 10px;letter-spacing:.12em}
  <label class="row"><span class="lb">MUSIC</span><input type="range" id="sMus" min="0" max="1" step="0.05"></label>
  <label class="row"><span class="lb">SFX</span><input type="range" id="sSfx" min="0" max="1" step="0.05"></label>
  <label class="row"><span class="lb">DRAG SPEED</span><input type="range" id="sSens" min="0.6" max="2" step="0.1"><span id="sSensV"></span></label>
+ <button class="btn alt tog" id="sBS">BOMB BUTTON: LEFT</button>
  <button class="btn alt tog" id="sRF">REDUCE FLASHING: OFF</button>
  <div class="help">Reduce Flashing turns off strobes and full-screen flashes and softens the beat pulse.<br>Touch: hold a second finger anywhere for slow, precise movement.</div>
  <button class="btn" id="bSetBack">BACK</button><div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
@@ -83,5 +86,5 @@ h2{font-size:38px;margin:0 0 10px;letter-spacing:.12em}
  <div class="help" style="font-size:13px;color:#ccd;max-width:320px">NEON GEARSTORM contains flashing lights, strobe effects and rapidly pulsing colors that may trigger seizures for people with photosensitive epilepsy. Stop playing immediately if you feel unwell.</div><br>
  <button class="btn alt tog" id="pRF">REDUCE FLASHING: OFF</button><button class="btn" id="bPhotoOk">CONTINUE</button>
  <div class="help">You can change this any time in SETTINGS.</div></div>
-<script src="build/game.js"></script>
+<script src="build/game.js?v=1.0"></script>
 </body></html>
