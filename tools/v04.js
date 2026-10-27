@@ -55,13 +55,13 @@ if(!ONLY||ONLY==='boss'){
  // 4) boss 2: real shots, ship parked under each part in turn
  p=await mk('?debug=boss2,inv,autostart');
  const bs=await p.evaluate(()=>{const ph=[];let f=0,bo=null;while(f<20000&&NG.G.state==='play'){NG.step(5);f+=5;bo=NG.G.boss;if(!bo||!bo.act||bo.dying)continue;if(ph[ph.length-1]!==bo.phase)ph.push(bo.phase);
-   const tgt=bo.parts.filter(q=>q.act).sort((a,b)=>a.hp-b.hp)[0]||bo;NG.P.x=tgt.x;NG.P.y=Math.min(NG.H||800,640);NG.G.weapon=1;if(window.__snap===undefined&&bo.phase===1&&bo.ls===1){window.__snap=f;break;}}
+   const tgt=bo.parts.filter(q=>q.act).sort((a,b)=>a.hp-b.hp)[0]||bo;NG.P.x=tgt.x;NG.P.y=Math.min(NG.H||800,640);NG.G.weapon=1;if(bo.phase>=1&&bo.ls===1&&bo.lt>30){break;}}
   return {ph,f,state:NG.G.state};});
- await shot(p,'v04-boss2.png');
+ console.log('boss2 pre-shot',JSON.stringify(bs));await shot(p,'v04-boss2.png');
  const bs2=await p.evaluate(()=>{const ph=[];let f=0,bo=null,lunges=0,last=0;while(f<30000&&NG.G.state==='play'){NG.step(5);f+=5;bo=NG.G.boss;if(!bo||!bo.act||bo.dying)continue;if(ph[ph.length-1]!==bo.phase)ph.push(bo.phase);if(bo.ls===2&&last!==2)lunges++;last=bo.ls;
    const tgt=bo.parts.filter(q=>q.act).sort((a,b)=>a.hp-b.hp)[0]||bo;NG.P.x=tgt.x;NG.P.y=640;NG.G.weapon=1;}
   return {ph,f,lunges,state:NG.G.state,h2:document.querySelector('#clear h2').textContent,salv:document.getElementById('cSalv').textContent,b2:NG.G.boss2Kill};});
- ok(bs2.state==='clear'&&bs2.b2&&bs2.ph.includes(3),'boss 2 parts destroyed -> berserk core -> FOUNDRY CLEARED',{...bs,...bs2});
+ ok(bs2.state==='clear'&&bs2.b2&&bs2.ph.includes(3),'boss 2 parts destroyed -> berserk core -> FOUNDRY CLEARED',bs2);
  await shot(p,'v04-clear.png');await p.close();}
 ok(errs.length===0,'no console errors',errs.slice(0,5));
 console.log(fails?'FAILURES '+fails:'ALL PASS');await b.close();})();

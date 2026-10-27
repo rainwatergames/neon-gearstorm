@@ -30,7 +30,7 @@ const EV2=[[0,()=>{G.banner={t:0,a:'STAGE 2',b:'THE IRON FOUNDRY'};}],[150,()=>d
 for(const r of[[1800,'g'],[1900,'bgbbgbbg'],[2020,'gbgbbgbg'],[2140,'b'],[2176,'bbbggbbb']]){const rd=r[0],k=r[1].split('');EV2.push([rd-860,()=>blockRow(rd,k)]);}
 function s2reset(d){Object.assign(G2,{d:d||0,spd:1.5,ev:0,wallHits:0,flameHits:0,blocksBroken:0});
  G2.gears=GEARS.map(g=>({d:g[0],x0:g[1],r:g[2],amp:g[3],f:g[4],spin:g[5],rot:0}));G2.flames=FLAMES.map(f=>({d:f[0],side:f[1],len:f[2],ph:f[3]}));G2.items=[];
- for(let dd=BR0+120;dd<BR1-120;dd+=60){const s=s2span(dd);G2.items.push({d:dd,x:(s.L+s.a)/2,k:'m'});if(dd%120===0)G2.items.push({d:dd,x:(s.b+s.R)/2,k:'c'});}
+ for(let dd=BR0+120;dd<BR1-120;dd+=60){const s=s2span(dd);G2.items.push({d:dd,x:(s.L+s.a)/2,k:'m'});if((dd-BR0)%120===0)G2.items.push({d:dd,x:(s.b+s.R)/2,k:'c'});}
  EV2.sort((p,q)=>p[0]-q[0]);if(G2.d>0)while(G2.ev<EV2.length&&EV2[G2.ev][0]<G2.d)G2.ev++;}
 function toStage2(){if(G.state!=='play')return;G.stage=2;s2reset(0);G.hold=false;G.boss=null;EB.clear();G.shield=Math.min(G.maxSh,G.shield+1);G.score+=G.lives*10000;
  G.banner={t:0,a:'STAGE 1 CLEAR',b:'+'+(G.lives*10000).toLocaleString()+' · SHIELD +1'};musicStart(2);G.ev2Delay=150;}
@@ -92,7 +92,9 @@ function s2DrawBack(){ctx.fillStyle='rgba(40,14,6,.38)';ctx.fillRect(0,0,W,H);
  // dim background girders (parallax, never bullet-like: long, wide, dark)
  ctx.fillStyle='rgba(90,50,30,.18)';const o=(G2.d*.5)%160;for(let y=-160+o;y<H;y+=160)ctx.fillRect(0,y,W,10);for(const x of[70,180,290])ctx.fillRect(x-4,0,8,H);
  const st=6,n=Math.ceil(H/st)+2,Ls=[],Rs=[],As=[],Bs=[],Ys=[];for(let i=0;i<n;i++){const y=-st+i*st,s=s2span(s2d(y));Ys.push(y);Ls.push(s.L);Rs.push(s.R);As.push(s.a);Bs.push(s.b);}
- const fill='#160c12';
+ if(!G2.pat){const c=document.createElement('canvas');c.width=c.height=24;const x=c.getContext('2d');x.fillStyle='#24140e';x.fillRect(0,0,24,24);x.strokeStyle='rgba(255,150,70,.16)';x.lineWidth=3;x.beginPath();x.moveTo(-6,30);x.lineTo(30,-6);x.moveTo(-18,18);x.lineTo(18,-18);x.moveTo(6,42);x.lineTo(42,6);x.stroke();G2.pat=ctx.createPattern(c,'repeat');}
+ try{G2.pat.setTransform(new DOMMatrix([1,0,0,1,0,G2.d%24]));}catch(_){}
+ const fill=G2.pat;
  // left wall
  ctx.beginPath();ctx.moveTo(-5,Ys[0]);for(let i=0;i<n;i++)ctx.lineTo(Ls[i],Ys[i]);ctx.lineTo(-5,Ys[n-1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();
  ctx.beginPath();ctx.moveTo(W+5,Ys[0]);for(let i=0;i<n;i++)ctx.lineTo(Rs[i],Ys[i]);ctx.lineTo(W+5,Ys[n-1]);ctx.closePath();ctx.fill();
