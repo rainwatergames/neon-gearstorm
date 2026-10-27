@@ -5,7 +5,7 @@ const errs=[];const mk=async(q)=>{const p=await b.newPage();await p.emulate({vie
  p.on('console',m=>{if(m.type()==='error')errs.push(q+': '+m.text());});p.on('pageerror',e=>errs.push(q+': '+e.message));await p.goto(URL0+q,{waitUntil:'load'});await new Promise(r=>setTimeout(r,1200));return p;};
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 // title
-let p=await mk('');await p.screenshot({path:'shots/title.png'});
+let p=await mk('');await p.screenshot({path:'shots/v02-photo.png'});if(await p.$('#photo:not(.hide)')){await p.tap('#bPhotoOk');await sleep(200);}await p.screenshot({path:'shots/title.png'});
 await p.tap('#bStart');await sleep(500);
 const before=await p.evaluate(()=>({x:NG.P.x,y:NG.P.y,st:NG.G.state}));
 // drag with touch via CDP

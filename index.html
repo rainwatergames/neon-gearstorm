@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- NEON GEARSTORM v0.1 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. -->
+<!-- NEON GEARSTORM v0.2 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. -->
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="author" content="Rainwater Games - Jeff Rainwater">
@@ -20,6 +20,9 @@ canvas{display:block;touch-action:none}
 @keyframes d{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-10px);opacity:1}}
 .ov{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;background:radial-gradient(ellipse at center,rgba(5,3,12,.35),rgba(5,3,12,.85))}
 .hide{display:none!important}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:280px;margin:10px 0;font-size:13px;letter-spacing:.2em;color:#e6feff;text-shadow:0 0 6px #2ef9ff}
+.row input{flex:1;accent-color:#ff3df0}.tog.on{border-color:#a6ff3a;text-shadow:0 0 8px #a6ff3a}
+#settings .btn,#photo .btn{margin-top:10px}
 .logo{line-height:.95;margin:0 0 6px}
 .logo .a{display:block;font-size:56px;font-weight:900;letter-spacing:.12em;color:#ffe6fd;text-shadow:0 0 6px #ff3df0,0 0 18px #ff3df0,0 0 40px #ff3df0}
 .logo .b{display:block;font-size:40px;font-weight:900;letter-spacing:.06em;color:#e6feff;text-shadow:0 0 6px #2ef9ff,0 0 18px #2ef9ff,0 0 40px #2ef9ff}
@@ -45,16 +48,27 @@ h2{font-size:38px;margin:0 0 10px;letter-spacing:.12em}
 <div id="splash"><div class="sp-t">RAINWATER GAMES</div><div class="dots"><i></i><i></i><i></i></div><div class="sp-t" style="font-size:10px;color:#889;text-shadow:none">LOADING</div></div>
 <canvas id="c"></canvas>
 <div id="hud" class="hide"><button id="bMute" aria-label="Mute">♪</button><button id="bPause" aria-label="Pause">II</button><button id="bBomb" aria-label="Bomb">BOMB</button></div>
-<div id="title" class="ov hide"><div class="ver" id="ver">v0.1</div>
+<div id="title" class="ov hide"><div class="ver" id="ver">v0.2</div>
  <svg class="gear" viewBox="-50 -50 100 100"><g fill="none" stroke="#ffb52e" stroke-width="4"><path d="M-6-46h12l2 10 8 3 8-6 9 8-6 9 3 8 10 2v12l-10 2-3 8 6 8-9 9-8-6-8 3-2 10h-12l-2-10-8-3-8 6-9-9 6-8-3-8-10-2v-12l10-2 3-8-6-9 9-8 8 6 8-3z"/><circle r="16" stroke="#2ef9ff"/><circle r="5" fill="#ff3df0" stroke="none"/></g></svg>
  <h1 class="logo"><span class="a">NEON</span><span class="b">GEARSTORM</span></h1>
  <div class="prod">A RAINWATER GAMES PRODUCTION</div>
- <button class="btn pulse" id="bStart">TAP TO START</button>
+ <button class="btn pulse" id="bStart">TAP TO START</button><button class="btn alt" id="bSet1">SETTINGS</button>
  <div class="hi" id="tHi"></div>
- <div class="help">Drag anywhere to fly (relative) · auto-fire<br>Catch color-cycling orbs: <b style="color:#ffb52e">S</b>pread · <b style="color:#2ef9ff">L</b>aser · <b style="color:#a6ff3a">T</b>esla — same color levels up<br>Desktop: arrows/WASD · Shift slow · Space/X bomb · P pause · M mute</div>
+ <div class="help">Drag anywhere to fly (relative) · auto-fire · hold a 2nd finger for precise slow-move<br>Catch color-cycling orbs: <b style="color:#ffb52e">S</b>pread · <b style="color:#2ef9ff">L</b>aser · <b style="color:#a6ff3a">T</b>esla — same color levels up<br>Desktop: arrows/WASD · Shift slow · Space/X bomb · P pause · M mute</div>
  <div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
-<div id="pause" class="ov hide"><h2 class="pz">PAUSED</h2><button class="btn" id="bResume">RESUME</button><button class="btn alt" id="bQuit">QUIT TO TITLE</button><div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
+<div id="pause" class="ov hide"><h2 class="pz">PAUSED</h2><button class="btn" id="bResume">RESUME</button><button class="btn alt" id="bSet2">SETTINGS</button><button class="btn alt" id="bQuit">QUIT TO TITLE</button><div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
 <div id="over" class="ov hide"><h2 class="go">GAME OVER</h2><div class="lbl">SCORE</div><div class="big" id="oScore">0</div><div class="lbl">HI-SCORE <span id="oHi"></span></div><br><button class="btn" id="bRetry">RETRY</button><button class="btn alt" id="bTitle1">TITLE</button><div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
 <div id="clear" class="ov hide"><h2 class="sc">STAGE CLEAR</h2><div class="lbl">CLOCKWORK COLOSSUS DESTROYED</div><br><div class="lbl">BONUS</div><div id="cBonus" style="color:#ffb52e;margin:4px 0 10px"></div><div class="lbl">SCORE</div><div class="big" id="cScore">0</div><div class="lbl">HI-SCORE <span id="cHi"></span></div><br><button class="btn" id="bAgain">PLAY AGAIN</button><button class="btn alt" id="bTitle2">TITLE</button><div class="lbl" style="margin-top:12px">MORE STAGES COMING SOON</div><div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
+<div id="settings" class="ov hide"><h2 class="pz">SETTINGS</h2>
+ <label class="row">MUSIC <input type="range" id="sMus" min="0" max="1" step="0.05"></label>
+ <label class="row">SFX <input type="range" id="sSfx" min="0" max="1" step="0.05"></label>
+ <label class="row">DRAG SPEED <input type="range" id="sSens" min="0.6" max="2" step="0.1"><span id="sSensV"></span></label>
+ <button class="btn alt tog" id="sRF">REDUCE FLASHING: OFF</button>
+ <div class="help">Reduce Flashing turns off strobes and full-screen flashes and softens the beat pulse.<br>Touch: hold a second finger anywhere for slow, precise movement.</div>
+ <button class="btn" id="bSetBack">BACK</button><div class="copy">© 2026 Rainwater Games (Jeff Rainwater). All rights reserved.</div></div>
+<div id="photo" class="ov hide" style="background:rgba(5,3,12,.96)"><h2 class="pz" style="font-size:26px">PHOTOSENSITIVITY WARNING</h2>
+ <div class="help" style="font-size:13px;color:#ccd;max-width:320px">NEON GEARSTORM contains flashing lights, strobe effects and rapidly pulsing colors that may trigger seizures for people with photosensitive epilepsy. Stop playing immediately if you feel unwell.</div><br>
+ <button class="btn alt tog" id="pRF">REDUCE FLASHING: OFF</button><button class="btn" id="bPhotoOk">CONTINUE</button>
+ <div class="help">You can change this any time in SETTINGS.</div></div>
 <script src="build/game.js"></script>
 </body></html>
