@@ -95,7 +95,7 @@ function updBoss(e){const t=e.t;if(e.dying){e.dT++;if(e.dT%5===0)boom(e.x+rnd(-9
 // ---------- player weapons
 function pb(x,y,vx,vy,dmg,k,pierce,w,h,rot){const b=PB.get();if(!b)return;b.x=x;b.y=y;b.vx=vx;b.vy=vy;b.dmg=dmg;b.k=k;b.pierce=pierce;b.w=w;b.h=h;b.rot=rot;}
 function fire(){const L=G.lvl,w=G.weapon;if(P.fireT>0)return;
- if(w===0){P.fireT=5;const n=[3,5,7][L-1],sp=[.24,.44,.66][L-1];for(let i=0;i<n;i++){const a=-Math.PI/2+(i/(n-1)-.5)*sp;pb(P.x,P.y-12,Math.cos(a)*11,Math.sin(a)*11,1,0,false,5,12,a+Math.PI/2);}}
+ if(w===0){P.fireT=6;const n=[3,5,7][L-1],sp=[.24,.44,.66][L-1];for(let i=0;i<n;i++){const a=-Math.PI/2+(i/(n-1)-.5)*sp;pb(P.x,P.y-12,Math.cos(a)*11,Math.sin(a)*11,1,0,false,5,12,a+Math.PI/2);}}
  else if(w===1){P.fireT=3;pb(P.x,P.y-18,0,-16,[.9,1.25,1.7][L-1],1,true,[5,9,14][L-1],30,0);}
  else{P.fireT=6;pb(P.x-5,P.y-10,0,-12,1,2,false,4,10,0);pb(P.x+5,P.y-10,0,-12,1,2,false,4,10,0);
   const rg=[190,230,270][L-1],c=[];for(const e of EN.a){if(!e.act||e.y<-10||e.dying)continue;const dx=e.x-P.x,dy=e.y-P.y,d=dx*dx+dy*dy;if(d<rg*rg)c.push([d,e]);}
@@ -174,15 +174,16 @@ function update(){G.t++;
  if(G.banner){G.banner.t++;if(G.banner.t>200)G.banner=null;}
  G.shake*=.88;if(G.shake<.3)G.shake=0;G.flash*=.9;if(G.flash<.02)G.flash=0;}
 // ---------- draw
-function drawEnemy(e){const fl=e.fl>0;
+function dsF(k,x,y,r,fl){ds(S[k],x,y,r);if(fl){ctx.globalAlpha=.4;ds(S[k+'W'],x,y,r);ctx.globalAlpha=1;}}
+function drawEnemy(e){const fl=e.fl>0&&(e.fl%2===1);
  switch(e.type){
- case 'drone':ds(fl?S.droneW:S.drone,e.x,e.y);break;
- case 'swooper':ds(fl?S.swooperW:S.swooper,e.x,e.y,e.rot);break;
- case 'turret':ds(fl?S.turretW:S.turret,e.x,e.y);ds(S.barrel,e.x,e.y,e.rot);break;
- case 'carrier':ds(fl?S.carrierW:S.carrier,e.x,e.y);break;
- case 'gunship':ds(S.gGear,e.x-58,e.y+6,e.t*.05);ds(S.gGear,e.x+58,e.y+6,-e.t*.05);ds(fl?S.gunshipW:S.gunship,e.x,e.y);break;
+ case 'drone':dsF('drone',e.x,e.y,0,fl);break;
+ case 'swooper':dsF('swooper',e.x,e.y,e.rot,fl);break;
+ case 'turret':dsF('turret',e.x,e.y,0,fl);ds(S.barrel,e.x,e.y,e.rot);break;
+ case 'carrier':dsF('carrier',e.x,e.y,0,fl);break;
+ case 'gunship':ds(S.gGear,e.x-58,e.y+6,e.t*.05);ds(S.gGear,e.x+58,e.y+6,-e.t*.05);dsF('gunship',e.x,e.y,0,fl);break;
  case 'boss':{const sh=e.dying?rnd(-3,3):0,x=e.x+sh,y=e.y;ctx.globalCompositeOperation='lighter';ds(S.dot.mg,x,y,0,7);ctx.globalCompositeOperation='source-over';
-  ds(S.bGear,x-80,y+4,e.g);ds(S.bGear,x+80,y+4,-e.g);ds(S.bGear2,x-48,y+58,-e.g*1.8);ds(S.bGear2,x+48,y+58,e.g*1.8);ds(fl?S.bossW:S.boss,x,y);
+  ds(S.bGear,x-80,y+4,e.g);ds(S.bGear,x+80,y+4,-e.g);ds(S.bGear2,x-48,y+58,-e.g*1.8);ds(S.bGear2,x+48,y+58,e.g*1.8);dsF('boss',x,y,0,fl);
   ctx.save();ctx.translate(x,y);ctx.lineCap='round';const ha=(e.phase===1?e.hA:e.t*.01)-Math.PI/2+Math.PI/2,ma=e.t*.08;
   ctx.strokeStyle=e.phase===2?COL.eb:COL.mg;ctx.lineWidth=6;ctx.globalAlpha=.35;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(ha)*34,Math.sin(ha)*34);ctx.stroke();ctx.globalAlpha=1;ctx.lineWidth=3;ctx.stroke();
   ctx.strokeStyle=COL.cy;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(Math.cos(ma)*46,Math.sin(ma)*46);ctx.stroke();
@@ -199,7 +200,7 @@ function draw(){const play=G.state!=='title';const sx=G.shake?rnd(-G.shake,G.sha
  for(const p of PT.a){if(p.act&&p.k===2){ctx.globalAlpha=Math.min(1,p.life/20);ds(S.debris,p.x,p.y,p.rot,p.s);}}ctx.globalAlpha=1;
  // additive layer: player shots, sparks, rings, arcs
  ctx.globalCompositeOperation='lighter';
- ctx.globalAlpha=.8;for(const b of PB.a){if(!b.act)continue;if(b.k===0)ds(S.pbS,b.x,b.y,b.rot);else if(b.k===1)ds(S.pbL[G.lvl-1]||S.pbL[0],b.x,b.y);else ds(S.pbT,b.x,b.y);}ctx.globalAlpha=1;
+ ctx.globalAlpha=.6;for(const b of PB.a){if(!b.act)continue;if(b.k===0)ds(S.pbS,b.x,b.y,b.rot);else if(b.k===1)ds(S.pbL[G.lvl-1]||S.pbL[0],b.x,b.y);else ds(S.pbT,b.x,b.y);}ctx.globalAlpha=1;
  if(G.arcs.length&&P.dead<=0&&G.weapon===2){ctx.strokeStyle=COL.li;for(const a of G.arcs){ctx.globalAlpha=.25;ctx.lineWidth=6;drawLightning(P.x,P.y-8,a.x,a.y);ctx.stroke();ctx.globalAlpha=.95;ctx.lineWidth=1.6;drawLightning(P.x,P.y-8,a.x,a.y);ctx.stroke();ds(S.dot.li,a.x,a.y,0,1.2);}ctx.globalAlpha=1;}
  for(const p of PT.a){if(!p.act)continue;const f=p.life/p.max;if(p.k===0){ctx.globalAlpha=f;ds(S.dot[p.c],p.x,p.y,0,p.s);}else if(p.k===1){ctx.globalAlpha=f;ctx.strokeStyle=COL[p.c]||'#fff';ctx.lineWidth=3*f+.5;ctx.beginPath();ctx.arc(p.x,p.y,p.s*(1.6-f)*1.6,0,TAU);ctx.stroke();}}
  ctx.globalAlpha=1;
