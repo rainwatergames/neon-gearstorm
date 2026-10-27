@@ -42,6 +42,10 @@ const sfx={
  bomb(){if(!AU.c)return;const t=AU.c.currentTime;noise(1.1,.5,'bandpass',180,4200,null,t,1.2,AU.srev);noise(.9,.35,'bandpass',5000,300,null,t+.25,1.5); // whoosh
   sub(110,28,1.6,.9,t+.05);tone('sawtooth',300,30,1.2,.22,null,t,1800);noise(1.6,.55,'lowpass',2600,80,null,t+.05,0,AU.srev);   // boom + sub drop
   tone('sine',60,22,2.2,.6,null,t+.3);},
+ hit(){if(!AU.c)return;const t=AU.c.currentTime;tone('square',1400,180,.16,.22,null,t,4000);tone('sawtooth',300,60,.22,.25,null,t,1500);noise(.09,.35,'highpass',2500,2500,null,t);sub(120,40,.2,.6,t);},
+ cog(){if(!AU.c)return;const t=AU.c.currentTime;if(t-(AU.lastCog||0)<.05)return;AU.lastCog=t;tone('triangle',1900,2400,.05,.04,null,t);},
+ medal(n){if(!AU.c)return;const t=AU.c.currentTime,m=84+Math.min(n,7)*2;tone('square',mf(m),mf(m),.07,.05,null,t,5000);tone('triangle',mf(m+7),mf(m+7),.1,.05,null,t+.05);},
+ deny(){if(!AU.c)return;const t=AU.c.currentTime;tone('square',160,120,.15,.08,null,t,900);},
  die(){if(!AU.c)return;const t=AU.c.currentTime;sfx.boom(2.5);tone('sawtooth',900,40,.9,.25,null,t,3000);tone('square',450,30,1,.12,null,t+.05,1200);noise(1.2,.4,'lowpass',2500,90,null,t,0,AU.srev);},
  warn(){if(!AU.c)return;const t=AU.c.currentTime;for(let i=0;i<4;i++){const s=t+i*.9;tone('sawtooth',380,760,.45,.08,null,s,2200,.05);tone('sawtooth',760,380,.45,.08,null,s+.45,2200);}},
  phase(){if(!AU.c)return;noise(.7,.45,'bandpass',500,4000,null,0,1,AU.srev);tone('triangle',200,900,.5,.2);sub(90,30,.8,.7);},
@@ -51,9 +55,9 @@ const sfx={
 // ---------- music: 16th-step sequencer, song sections, beat clock
 const mf=n=>440*Math.pow(2,(n-69)/12);
 // main: A minor  i-VI-III-VII ; boss: D minor i-VI-iv-V
-const HOOK=[[0,69,2],[2,72,2],[4,76,5],[10,74,2],[12,72,2],[14,74,2],[16,76,6],[22,72,2],[24,69,4],[28,72,2],[30,74,2],[32,76,2],[34,79,2],[36,76,5],[42,74,2],[44,72,2],[46,74,2],[48,71,6],[54,74,2],[56,76,4],[60,71,4]];
+const HOOK=[[0,69,3],[3,72,3],[6,76,2],[8,75,2],[10,76,4],[16,77,3],[19,76,3],[22,72,2],[24,69,6],[32,70,3],[35,74,3],[38,77,2],[40,76,4],[44,74,2],[46,70,2],[48,68,4],[52,71,2],[54,74,2],[56,76,4],[60,75,2],[62,68,2]];
 const BHOOK=[[0,74,3],[3,77,3],[6,81,2],[8,79,4],[12,77,4],[16,74,3],[19,70,3],[22,74,2],[24,72,8],[32,67,3],[35,70,3],[38,74,2],[40,72,4],[44,70,4],[48,69,3],[51,73,3],[54,76,2],[56,73,8]];
-const SONGS=[{bpm:118,ch:[[57,60,64],[53,57,60],[52,55,60],[55,59,62]],root:[45,41,48,43],hook:HOOK,
+const SONGS=[{bpm:124,dark:1,ch:[[57,60,64],[53,57,60],[58,62,65],[56,59,64]],root:[45,41,46,40],hook:HOOK,
  sec:[['intro',4,'k a p'],['verse',8,'k b h s a p'],['chorus',8,'k b h s a p l c'],['break',4,'p a lf'],['drop',8,'k b h s a p l c o r'],['verse',8,'k b h s a p'],['chorus',8,'k b h s a p l c o']]},
  {bpm:150,boss:1,ch:[[62,65,69],[58,62,65],[55,58,62],[57,61,64]],root:[38,46,43,45],hook:BHOOK,
  sec:[['siren',4,'S k'],['heavy',8,'k b h s a o'],['hook',8,'k b h s a l o r'],['break',2,'S p'],['hook',8,'k b h s a l o r c']]}];
@@ -78,7 +82,8 @@ function musicTick(){const a=AU.c;if(!a||!AU.on||a.state!=='running')return;cons
   if(has('h')){const open=has('o')&&st%4===2;if(st%2===1||has('o')||boss)noise(open?.12:.03,open?.12:(st%2?.11:.05),'highpass',open?7000:8500,open?6000:8500,M,t);}
   // BASS: octave-jumping 8ths (main) / distorted rolling 16ths (boss)
   if(has('b')){if(boss){const n=root-12+(st%4===2?12:0);tone('sawtooth',mf(n),mf(n),sp*.85,.32,AU.dist,t,1800);tone('sine',mf(root-12),mf(root-12),sp*.9,.25,D,t);}
-   else if(st%2===0){const n=root-12+(st%4===2?12:0);tone('sawtooth',mf(n),mf(n),sp*1.7,.2,D,t,1500);tone('square',mf(n)*1.003,mf(n),sp*1.6,.08,D,t,900);}}
+   else if(song.dark){const n=root-12+(st%8===6?12:0)+(st===14?1:0);tone('sawtooth',mf(n),mf(n),sp*.8,.2,AU.dist,t,st%4===0?1400:700);tone('sawtooth',mf(n)*1.012,mf(n)*1.012,sp*.8,.1,D,t,900);if(st%4===0)tone('sine',mf(root-24),mf(root-24),sp*2,.22,D,t);}
+  else if(st%2===0){const n=root-12+(st%4===2?12:0);tone('sawtooth',mf(n),mf(n),sp*1.7,.2,D,t,1500);tone('square',mf(n)*1.003,mf(n),sp*1.6,.08,D,t,900);}}
   // ARP: 16th chord-tone arpeggio through the delay
   if(has('a')){const arp=ch[st%3]+12+(Math.floor(st/3)%2?12:0)+(boss?0:0);tone('square',mf(arp),mf(arp),sp*.7,boss?.04:.045,D,t,has('lf')?1200:3600,0,AU.dly);}
   // PAD: detuned saws, slow attack, ducked by kick
