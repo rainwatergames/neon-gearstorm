@@ -28,7 +28,7 @@ function auInit(){if(AU.c){if(AU.c.state!=='running'&&G.state!=='pause')AU.c.res
   AU.gtr=gi;AU.gtrOut=out;AU.wah=wah;
   // palm-mute chug rig: separate shaper, dark cab
   const ci=a.createGain();const cs=a.createWaveShaper();cs.curve=gc;cs.oversample='2x';const cl=a.createBiquadFilter();cl.type='lowpass';cl.frequency.value=1300;cl.Q.value=1.4;const co=a.createGain();co.gain.value=.2;ci.connect(cs);cs.connect(cl);cl.connect(co);co.connect(AU.duck);AU.chug=ci;}
- AU.gcount=0;AU.mcount=[0,0,0,0];
+ AU.gcount=0;AU.mcount=[0,0,0,0,0,0];
  const n=a.sampleRate;AU.nb=a.createBuffer(1,n,n);const d=AU.nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}
 function applyVol(){if(!AU.mus)return;AU.mus.gain.value=.55*AU.musV*AU.musV;AU.sfx.gain.value=.75*AU.sfxV*AU.sfxV;}
 function setVol(k,v){AU[k]=v;lsSet(k==='musV'?'ngs_musv':'ngs_sfxv',v);applyVol();}
@@ -97,6 +97,11 @@ SONGS.push({bpm:112,dark:1,ch:[[52,55,59],[53,57,60],[52,55,59],[50,53,57]],root
  sec:[['intro',4,'k p lf G'],['grind',8,'k b h s p G'],['verse',8,'k b h s a p G'],['chorus',8,'k b h s p c o g G'],['solo',8,'k b h s p G Q r'],['break',4,'p lf S'],['drop',8,'k b h s a p g c o r G']]});
 SONGS.push({bpm:164,boss:1,ch:[[61,64,68],[57,61,64],[54,57,61],[56,60,63]],root:[37,45,42,44],hook:tr(BHOOK,-1),
  sec:[['siren',4,'S k G'],['heavy',8,'k b h s o G'],['hook',8,'k b h s g o r G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['hook',8,'k b h s a g o r c G'],['solo',8,'k b h s o G Q']]});
+// v1.1 stage 3: B minor rail-chase thrash, 172 bpm, squealing leads ; boss 3: F# minor, 184 bpm, double solos
+SONGS.push({bpm:172,ch:[[59,62,66],[55,59,62],[57,61,64],[54,57,61]],root:[47,43,45,42],hook:tr(HOOK,2),
+ sec:[['intro',4,'k h G S'],['gallop',8,'k b h s a G g'],['verse',8,'k b h s a p G'],['chorus',8,'k b h s a l c o g G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['drop',8,'k b h s a g c o r G Q']]});
+SONGS.push({bpm:184,boss:1,ch:[[54,57,61],[50,54,57],[52,56,59],[49,52,56]],root:[42,38,40,37],hook:tr(BHOOK,4),
+ sec:[['siren',4,'S k G'],['heavy',8,'k b h s o G g'],['solo',8,'k b h s o G Q r'],['hook',8,'k b h s a g o r c G'],['break',2,'S p Q'],['solo',8,'k b h s a o G Q r c'],['hook',8,'k b h s a g o r c G Q']]});
 // stage-1 boss also gets the guitars + a solo
 SONGS[1].sec=[['siren',4,'S k'],['heavy',8,'k b h s a o G'],['hook',8,'k b h s a l o r G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['hook',8,'k b h s a g o r c G']];
 function songLen(s){let n=0;for(const x of s.sec)n+=x[1];return n;}

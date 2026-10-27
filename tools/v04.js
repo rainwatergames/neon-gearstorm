@@ -53,7 +53,7 @@ if(!ONLY||ONLY==='boss'){
  const tr=await p.evaluate(()=>{let f=0;while(!(NG.G.boss&&NG.G.boss.y>=150)&&f<2000){NG.step(10);f+=10;}const bo=NG.G.boss;for(const q of bo.parts)if(q.act)NG.kill(q);bo.invT=0;NG.hurt(bo,9999);NG.step(500);return {stage:NG.G.stage,state:NG.G.state,banner:NG.G.banner&&NG.G.banner.a,d:NG.G2.d};});
  ok(tr.stage===2&&tr.state==='play','stage-1 boss kill continues the run into STAGE 2',tr);await p.close();
  // 4) boss 2: real shots, ship parked under each part in turn
- p=await mk('?debug=boss2,inv,autostart');
+ p=await mk('?debug=boss2,inv,autostart,s2only');
  const bs=await p.evaluate(()=>{const ph=[];let f=0,bo=null;while(f<20000&&NG.G.state==='play'){NG.step(5);f+=5;bo=NG.G.boss;if(!bo||!bo.act||bo.dying)continue;if(ph[ph.length-1]!==bo.phase)ph.push(bo.phase);
    const tgt=bo.parts.filter(q=>q.act).sort((a,b)=>a.hp-b.hp)[0]||bo;NG.P.x=tgt.x;NG.P.y=Math.min(NG.H||800,640);NG.G.weapon=1;if(bo.phase>=1&&bo.ls===1&&bo.lt>30){break;}}
   return {ph,f,state:NG.G.state};});

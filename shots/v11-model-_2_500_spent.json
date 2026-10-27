@@ -1,0 +1,61 @@
+{
+ "~2,500 spent": [
+  {
+   "spent": 2520,
+   "s2": true,
+   "livesAt3": 2,
+   "reached": true,
+   "livesAtB3": 2,
+   "b3T": 237,
+   "clear": true,
+   "livesLeft": 2,
+   "hits": {
+    "gan": 0,
+    "fence": 0,
+    "mort": 2,
+    "wave": 15,
+    "ram": 0
+   },
+   "carsLeft": 0,
+   "ph": 3
+  },
+  {
+   "spent": 2520,
+   "s2": true,
+   "livesAt3": 2,
+   "reached": true,
+   "livesAtB3": 2,
+   "b3T": 227.5,
+   "clear": true,
+   "livesLeft": 2,
+   "hits": {
+    "gan": 0,
+    "fence": 0,
+    "mort": 2,
+    "wave": 16,
+    "ram": 0
+   },
+   "carsLeft": 0,
+   "ph": 3
+  },
+  {
+   "spent": 2520,
+   "s2": true,
+   "livesAt3": 2,
+   "reached": true,
+   "livesAtB3": 2,
+   "b3T": 231,
+   "clear": true,
+   "livesLeft": 2,
+   "hits": {
+    "gan": 0,
+    "fence": 0,
+    "mort": 2,
+    "wave": 16,
+    "ram": 0
+   },
+   "carsLeft": 0,
+   "ph": 3
+  }
+ ]
+}

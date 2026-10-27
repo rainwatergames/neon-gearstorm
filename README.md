@@ -1,12 +1,19 @@
-# NEON GEARSTORM (working title) — v0.5
+# NEON GEARSTORM (working title) — v1.1
 
 A neon + steampunk vertical shoot-'em-up for phones (PWA), by **Rainwater Games**.
 Play: https://rainwatergames.github.io/neon-gearstorm/
 
 - Plain JS + Canvas 2D, no dependencies. Source in `src/`, bundle built to `build/game.js` with `node tools/build.js`.
-- Debug: `?debug=boss` (jump to boss, invincible, max weapon), `?debug=mid`, `?debug=inv`, add `laser`/`tesla`, `autostart`.
+- Debug: `?debug=boss` (jump to boss, invincible, max weapon), `?debug=mid`, `?debug=inv`, add `laser`/`tesla`, `autostart`, `stage2`, `boss2`, `stage3`, `boss3`, `s2only` (end the run after boss 2).
 
 © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. See LICENSE — not open source.
+
+## v1.1 — Stage 3: Speed Run Rail Chase
+- After the Iron Foundry boss the run continues into Stage 3: ~2x scroll sold by thin cyan/purple speed rails and motion-blurred ties (never round/red), chasing an armored steampunk train on twisting neon track.
+- Track switches (left lane: medals x2 score + gatling risk; right lane: salvage), a dark tunnel lit by a headlight cone + neon signals with enemies bracketed/flashed in, turret cars, gatling caboose (spin-up telegraph), flatbeds launching drones, signal gantries with green-lit gaps.
+- Boss 3 IRON LOCOMOTIVE: cars destroyed rear-first then detach and tumble; engine firebox + smokestack mortar barrage (marked impact squares) + telegraphed cowcatcher ram + steam-whistle shockwave with safe gaps; armored core; big DERAILED death. Then RUN COMPLETE (Stage 4 coming later).
+- New music: 172 bpm stage track and 184 bpm boss-3 track with squealing leads.
+- Tests: `node tools/v11.js <url>`; difficulty model: `TRIALS=3 node tools/v11model.js <url> "<config>"`.
 
 ## v0.5
 - Bomb button defaults to the LEFT (left:14px, 104px up + safe area); Settings → BOMB BUTTON toggles L/R. Old saved values are reset to LEFT once.
