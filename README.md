@@ -1,29 +1,29 @@
-# NEON GEARSTORM (working title) — v1.1.5
+# NEON GEARSTORM (working title) — v1.2.0
 
-A neon + steampunk vertical shoot-'em-up for phones (PWA), by **Rainwater Games**.
+A neon + steampunk vertical shoot-'em-up for phones (PWA), by **Rainwater Games**. Two stages for now (The Brass Nebula, The Iron Foundry); more stages are coming in later versions.
 Play: https://rainwatergames.github.io/neon-gearstorm/
 
 - Plain JS + Canvas 2D, no dependencies. Source in `src/`, bundle built to `build/game.js` with `node tools/build.js`.
-- Debug: `?debug=boss` (jump to boss, invincible, max weapon), `?debug=mid`, `?debug=inv`, add `laser`/`tesla`, `autostart`, `stage2`, `boss2`, `stage3`, `boss3`, `s2only` (end the run after boss 2).
+- Debug: `?debug=boss` (jump to boss, invincible, max weapon), `?debug=mid`, `?debug=inv`, add `laser`/`tesla`, `autostart`, `stage2`, `boss2` (old `stage3`/`boss3` links now start at boss 2, which leads to the ending).
 
 © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. See LICENSE — not open source.
 
+## v1.2.0
+- Stage 3 (rail chase / Iron Locomotive) removed. Neon Gearstorm is 2 stages for now while a better Stage 3 is designed. The old code is kept at git tag `stage3-railchase-archive`.
+- After the Inferno Drill Engine (boss 2) the run ends on a new ending screen. It says "ALL STAGES CLEAR!" and "Thanks for testing! More stages coming in later versions." Below that are results (kills, hits taken), medals (collected, best chain), score and bonus, salvage earned, and UPGRADE / PLAY AGAIN / TITLE. A new victory theme plays on it, so the audio continues from the boss-2 death into the ending.
+- Removed: the Stage 3 code, intro card and tips, boss 3, the Stage 3 and boss 3 music, the `stage3`/`boss3` debug flags (old links start at boss 2), and the Stage 3 screenshots and tests (tools/v11.js, tools/v11model.js). A run can no longer be in stage 3; if one somehow is, it goes straight to the ending.
+- Tests: `node tools/v120.js <url>` checks the boss 2 -> ALL STAGES CLEAR flow, the results and medals, the music, the legacy links, and that no stage 3 code is left. tools/v115silence.js now follows boss 2 into the ending.
+
 ## v1.1.5
 - Audio cutting out for good at the end of the Stage 2 boss. It did not reproduce in desktop headless Chrome (the audio stayed on through the boss death, stage clear and Stage 3). The probable phone causes are: (1) the OS suspends or "interrupts" the AudioContext and the old code only resumed it on a NEW touch, so a player holding their finger down got silence for the rest of the run; (2) a single bad (NaN) sample poisons the delay feedback and compressor, which means permanent silence. The old uncapped boss-death barrage made both more likely. Fix: a watchdog every 0.4 s, plus on every context state change. It resumes a suspended or interrupted context with no touch needed. It rebuilds the whole audio graph (and restarts the current music) if the context closes or the output contains a non-finite sample. Paused and backgrounded states are left alone. tools/v115silence.js tests it.
-- Limiter and mix checked on every stage and boss: peaks are -1.6 to -1.8 dBFS with heavy SFX on Stage 1/2/3 and all bosses (tools/v114audio.js, which now includes stage2-heavy, boss2 and stage3-heavy).
-- Stage 3 onboarding:
-  - An intro card (tap to skip) covers the goal and each mechanic.
-  - Tip popups appear for train cars, gantries, the track switch, the tunnel and the boss.
-  - Big arrows mark the first gantry gap ("FLY THROUGH") and the first track switch ("◀ MEDALS" / "SALVAGE ▶", "✕ FENCE").
-  - Boss 3's damageable part glows green and gets a "SHOOT HERE" arrow each time a new weak point opens.
-- Boss 3 HP x0.30 (cars, firebox, smokestack, core). The bot model went from 215-300 s+ to roughly 60-110 s depending on upgrades.
+- Limiter and mix checked on every stage and boss: peaks are -1.6 to -1.8 dBFS with heavy SFX on Stage 1, Stage 2 and both bosses (tools/v114audio.js).
 - BOMB button: a pulsing magenta glow ring (1.0-1.15 scale, 1.2 s) while bombs > 0, a white ping ring on pickup, and grey, dim and still at 0. With REDUCE FLASHING (or OS reduce-motion) it gets a gentle 2.4 s pulse and no ping.
 
 ## v1.1.4
 - Audio distortion fix (reported on Android + headset, Stage 1 and the Stage 1 boss). Cause: the old master bus (-20dB compressor with makeup gain -> x1.25 -> -3dB "limiter" with makeup) took a pre-master mix peaking at about +10.7 dBFS (stacked sub-bass booms/bombs/boss-death explosions, no voice limit) and squashed it to -0.3 dBFS. The limiter pumped hard and bent the low end on every big hit.
 - New master: gain 0.7 -> one compressor/limiter (-6 dB, 12:1, 2 ms attack) -> soft-knee safety clipper with a -1 dBFS ceiling. SFX are capped at 3 of the same sound and 16 total. Sub-bass is 4.4 dB lower. Music ducks briefly on big explosions, bombs, boss deaths and hull hits. Every voice disconnects its nodes when it ends.
 - Guitar: same rig, cleaner. Shaper drive 28 -> 12, a 3.6 kHz lowpass after the shaper to take out the fizz, wah peak +14 -> +8 dB, output .16 -> .12. Chug output .2 -> .15.
-- Test: `node tools/v114audio.js <url>` renders 24 s of music plus heavy SFX offline for Stage 1, the Stage 1 boss, Stage 3 and Boss 3, and checks peak <= -1 dBFS with 0 clipped samples (`--raw` measures the pre-master bus).
+- Test: `node tools/v114audio.js <url>` renders 24 s of music plus heavy SFX offline for Stage 1, the Stage 1 boss, Stage 2 and Boss 2, and checks peak <= -1 dBFS with 0 clipped samples (`--raw` measures the pre-master bus).
 
 ## v1.1.3
 - Touch BOMB button moved to the TOP-LEFT, just under the SHIELD/HULL bars / boss bar (8px gap, computed from the canvas scale), and made ~60% smaller (44–58px, 47px on a 412-wide phone) with a label that fits; clear of pause/mute. Saved bomb-side settings reset to LEFT once more. Test: `node tools/v111bomb.js <url>` (shots/v112-bomb-*.png).
@@ -31,12 +31,7 @@ Play: https://rainwatergames.github.io/neon-gearstorm/
 ## v1.1.1
 - Touch BOMB button moved to mid-left (vertically centred, scales 60–96px with screen, safe-area aware, clamped clear of SHIELD/HULL bars and the bottom HUD) in portrait and landscape. Saved bomb-side settings are reset to LEFT once. Test: `node tools/v111bomb.js <url>`.
 
-## v1.1 — Stage 3: Speed Run Rail Chase
-- After the Iron Foundry boss the run continues into Stage 3: ~2x scroll sold by thin cyan/purple speed rails and motion-blurred ties (never round/red), chasing an armored steampunk train on twisting neon track.
-- Track switches (left lane: medals x2 score + gatling risk; right lane: salvage), a dark tunnel lit by a headlight cone + neon signals with enemies bracketed/flashed in, turret cars, gatling caboose (spin-up telegraph), flatbeds launching drones, signal gantries with green-lit gaps.
-- Boss 3 IRON LOCOMOTIVE: cars destroyed rear-first then detach and tumble; engine firebox + smokestack mortar barrage (marked impact squares) + telegraphed cowcatcher ram + steam-whistle shockwave with safe gaps; armored core; big DERAILED death. Then RUN COMPLETE (Stage 4 coming later).
-- New music: 172 bpm stage track and 184 bpm boss-3 track with squealing leads.
-- Tests: `node tools/v11.js <url>`; difficulty model: `TRIALS=3 node tools/v11model.js <url> "<config>"`.
+## v1.1 — (Stage 3 rail chase: removed in v1.2.0, see the `stage3-railchase-archive` tag)
 
 ## v0.5
 - Bomb button defaults to the LEFT (left:14px, 104px up + safe area); Settings → BOMB BUTTON toggles L/R. Old saved values are reset to LEFT once.

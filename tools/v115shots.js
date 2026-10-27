@@ -1,4 +1,4 @@
-// v1.1.5 visual check: bomb button ready (pulsing) / empty (grey) / ping, stage 3 intro card, tips, switch + gantry arrows, boss 3 weak-point glow
+// v1.1.5 visual check: bomb button ready (pulsing) / empty (grey) / ping, v1.2.0 ALL STAGES CLEAR ending
 const puppeteer=require('/workspace/cr-test/node_modules/puppeteer-core');const U=process.argv[2]||'http://localhost:8765/';const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 (async()=>{const b=await puppeteer.launch({executablePath:'/usr/bin/google-chrome',headless:'new',args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});const errs=[];let all=true;const ok=(c,m,d)=>{all=all&&!!c;console.log((c?'PASS ':'FAIL ')+m+(d!==undefined?' '+JSON.stringify(d):''));};
  const p=await b.newPage();p.on('pageerror',e=>errs.push(e.message));await p.setViewport({width:412,height:915,deviceScaleFactor:2,isMobile:true,hasTouch:true});
@@ -8,15 +8,8 @@ const puppeteer=require('/workspace/cr-test/node_modules/puppeteer-core');const 
  await p.evaluate(()=>{NG.G.bombs=3;NG.updHud();NG.bombPing();});await sleep(120);r=await st();ok(r.cls.includes('ping'),'bomb ping on pickup',r);await p.screenshot({path:'shots/v115-bomb-ping.png',clip:{x:0,y:0,width:412,height:260}});
  await p.evaluate(()=>{NG.G.bombs=0;NG.updHud();});await sleep(800);r=await st();ok(r.cls.includes('empty')&&r.anim==='none'&&/grayscale/.test(r.filter),'bomb empty grey no pulse',r);await p.screenshot({path:'shots/v115-bomb-empty.png',clip:{x:0,y:0,width:412,height:260}});
  await p.evaluate(()=>{NG.SET.rf=true;NG.G.bombs=1;NG.updHud();});await sleep(300);r=await st();ok(r.anim==='bombPulseSoft','reduce-flashing -> gentle slow pulse',r);await p.evaluate(()=>{NG.SET.rf=false;NG.updHud();});
- // stage 3 intro card via the real transition
- await p.evaluate(()=>{const G=NG.G;G.stage=2;NG.EN.clear();NG.EB.clear();NG.toStage3();NG.step(60);});await sleep(300);r=await p.evaluate(()=>({card:NG.G3.card,d:NG.G.ev3Delay,ban:NG.G.banner}));ok(r.card===1&&r.d>300,'stage 3 intro card shown',r);await p.screenshot({path:'shots/v115-s3-card.png'});
- await p.evaluate(()=>{NG.step(400);});r=await p.evaluate(()=>({card:NG.G3.card,d:NG.G.ev3Delay}));ok(!r.card&&r.d===0,'card closes, stage runs',r);
- await p.evaluate(()=>{NG.step(260);});r=await p.evaluate(()=>NG.G3.tip&&NG.G3.tip.a);ok(/TRAIN CARS/.test(r||''),'first tip popup',r);await p.screenshot({path:'shots/v115-s3-tip.png'});
- // first gantry
- await p.evaluate(()=>{const G3=NG.G3;while(G3.d<1180)NG.step(1);NG.EN.clear();NG.EB.clear();while(G3.d<1250)NG.step(1);});await sleep(200);await p.screenshot({path:'shots/v115-s3-gantry.png'});
- // first switch
- await p.evaluate(()=>{const G3=NG.G3;while(G3.d<2100)NG.step(1);NG.EN.clear();NG.EB.clear();while(G3.d<2160)NG.step(1);NG.EN.clear();NG.EB.clear();});await sleep(200);r=await p.evaluate(()=>NG.G3.tip&&NG.G3.tip.a);ok(/SWITCH/.test(r||''),'switch tip',r);await p.screenshot({path:'shots/v115-s3-switch.png'});
- // boss 3 weak point
- await p.goto(U+'?debug=boss3,god',{waitUntil:'load'});await sleep(300);await p.evaluate(()=>{if(NG.G.state!=='play')NG.startGame();NG.G.ev3Delay=0;NG.step(420);NG.EB.clear();});await sleep(200);
- r=await p.evaluate(()=>{const b=NG.G.boss;return b?{t:b.type,wk:b.wkId,inv:b.invT,hp:Math.round(b.hp),parts:b.parts.map(q=>q.label+':'+Math.round(q.hp)+(q.lock?'L':''))}:null;});ok(r&&r.t==='boss3'&&r.wk,'boss 3 weak point glow + arrow',r);await p.screenshot({path:'shots/v115-b3-weak.png'});
+ // v1.2.0: boss 2 -> ALL STAGES CLEAR ending
+ await p.goto(U+'?debug=boss2,god',{waitUntil:'load'});await sleep(300);await p.evaluate(()=>{if(NG.G.state!=='play')NG.startGame();NG.G.medals=14;NG.G.bestChain=6;NG.step(80);const bo=NG.G.boss;for(const q of bo.parts)q.act=false;bo.invT=0;NG.kill(bo);for(let i=0;i<700&&NG.G.state==='play';i++)NG.step(1);});await sleep(500);
+ r=await p.evaluate(()=>({state:NG.G.state,h2:document.querySelector('#clear h2').textContent,sub:document.querySelector('#clear h2').nextElementSibling.textContent,res:document.getElementById('cRes').textContent,mode:NG.AU.mode}));
+ ok(r.state==='clear'&&r.h2==='ALL STAGES CLEAR!'&&/Thanks for testing! More stages coming in later versions\./.test(r.sub)&&/MEDALS/.test(r.res)&&/14 collected/.test(r.res)&&r.mode===4,'ending screen after boss 2',r);await p.screenshot({path:'shots/v120-all-clear.png'});
  ok(!errs.length,'no page errors',errs);console.log(all?'ALL PASS':'SOME FAIL');await b.close();process.exit(all?0:1);})();

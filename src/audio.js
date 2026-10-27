@@ -112,11 +112,9 @@ SONGS.push({bpm:112,dark:1,ch:[[52,55,59],[53,57,60],[52,55,59],[50,53,57]],root
  sec:[['intro',4,'k p lf G'],['grind',8,'k b h s p G'],['verse',8,'k b h s a p G'],['chorus',8,'k b h s p c o g G'],['solo',8,'k b h s p G Q r'],['break',4,'p lf S'],['drop',8,'k b h s a p g c o r G']]});
 SONGS.push({bpm:164,boss:1,ch:[[61,64,68],[57,61,64],[54,57,61],[56,60,63]],root:[37,45,42,44],hook:tr(BHOOK,-1),
  sec:[['siren',4,'S k G'],['heavy',8,'k b h s o G'],['hook',8,'k b h s g o r G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['hook',8,'k b h s a g o r c G'],['solo',8,'k b h s o G Q']]});
-// v1.1 stage 3: B minor rail-chase thrash, 172 bpm, squealing leads ; boss 3: F# minor, 184 bpm, double solos
-SONGS.push({bpm:172,ch:[[59,62,66],[55,59,62],[57,61,64],[54,57,61]],root:[47,43,45,42],hook:tr(HOOK,2),
- sec:[['intro',4,'k h G S'],['gallop',8,'k b h s a G g'],['verse',8,'k b h s a p G'],['chorus',8,'k b h s a l c o g G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['drop',8,'k b h s a g c o r G Q']]});
-SONGS.push({bpm:184,boss:1,ch:[[54,57,61],[50,54,57],[52,56,59],[49,52,56]],root:[42,38,40,37],hook:tr(BHOOK,4),
- sec:[['siren',4,'S k G'],['heavy',8,'k b h s o G g'],['solo',8,'k b h s o G Q r'],['hook',8,'k b h s a g o r c G'],['break',2,'S p Q'],['solo',8,'k b h s a o G Q r c'],['hook',8,'k b h s a g o r c G Q']]});
+// v1.2.0: stage 3 (and its two songs) removed. Mode 4 = ALL STAGES CLEAR victory theme: bright C major, 128 bpm, loops on the ending screen
+SONGS.push({bpm:128,ch:[[60,64,67],[65,69,72],[67,71,74],[64,67,71]],root:[48,53,55,52],hook:tr(HOOK,0),
+ sec:[['intro',2,'S p'],['chorus',8,'k b h s a l c o'],['hook',8,'k b h s a l o r c'],['break',2,'p lf'],['chorus',8,'k b h s a l c o g']]});
 // stage-1 boss also gets the guitars + a solo
 SONGS[1].sec=[['siren',4,'S k'],['heavy',8,'k b h s a o G'],['hook',8,'k b h s a l o r G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['hook',8,'k b h s a g o r c G']];
 function songLen(s){let n=0;for(const x of s.sec)n+=x[1];return n;}
