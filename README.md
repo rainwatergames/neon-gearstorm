@@ -1,4 +1,4 @@
-# NEON GEARSTORM (working title) — v1.1.3
+# NEON GEARSTORM (working title) — v1.1.4
 
 A neon + steampunk vertical shoot-'em-up for phones (PWA), by **Rainwater Games**.
 Play: https://rainwatergames.github.io/neon-gearstorm/
@@ -7,6 +7,12 @@ Play: https://rainwatergames.github.io/neon-gearstorm/
 - Debug: `?debug=boss` (jump to boss, invincible, max weapon), `?debug=mid`, `?debug=inv`, add `laser`/`tesla`, `autostart`, `stage2`, `boss2`, `stage3`, `boss3`, `s2only` (end the run after boss 2).
 
 © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. See LICENSE — not open source.
+
+## v1.1.4
+- Audio distortion fix (reported on Android + headset, Stage 1 and the Stage 1 boss). Cause: the old master bus (-20dB compressor with makeup gain -> x1.25 -> -3dB "limiter" with makeup) took a pre-master mix peaking at about +10.7 dBFS (stacked sub-bass booms/bombs/boss-death explosions, no voice limit) and squashed it to -0.3 dBFS. The limiter pumped hard and bent the low end on every big hit.
+- New master: gain 0.7 -> one compressor/limiter (-6 dB, 12:1, 2 ms attack) -> soft-knee safety clipper with a -1 dBFS ceiling. SFX are capped at 3 of the same sound and 16 total. Sub-bass is 4.4 dB lower. Music ducks briefly on big explosions, bombs, boss deaths and hull hits. Every voice disconnects its nodes when it ends.
+- Guitar: same rig, cleaner. Shaper drive 28 -> 12, a 3.6 kHz lowpass after the shaper to take out the fizz, wah peak +14 -> +8 dB, output .16 -> .12. Chug output .2 -> .15.
+- Test: `node tools/v114audio.js <url>` renders 24 s of music plus heavy SFX offline for Stage 1, the Stage 1 boss, Stage 3 and Boss 3, and checks peak <= -1 dBFS with 0 clipped samples (`--raw` measures the pre-master bus).
 
 ## v1.1.3
 - Touch BOMB button moved to the TOP-LEFT, just under the SHIELD/HULL bars / boss bar (8px gap, computed from the canvas scale), and made ~60% smaller (44–58px, 47px on a 412-wide phone) with a label that fits; clear of pause/mute. Saved bomb-side settings reset to LEFT once more. Test: `node tools/v111bomb.js <url>` (shots/v112-bomb-*.png).
