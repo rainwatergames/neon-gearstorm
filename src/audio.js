@@ -40,7 +40,8 @@ function auWatch(){const a=AU.c;if(!a||document.hidden||(typeof G!=='undefined'&
  if(a.state==='closed'){auRebuild();return;}
  if(AU.an){const d=AU.buf||(AU.buf=new Float32Array(AU.an.fftSize));AU.an.getFloatTimeDomainData(d);for(let i=0;i<d.length;i++)if(!isFinite(d[i])){auRebuild();return;}}}
 function auRebuild(){AU.rebuilds=(AU.rebuilds||0)+1;const old=AU.c,on=AU.on,mode=AU.mode;AU.c=null;AU.act=[];try{if(old&&old.state!=='closed')old.close();}catch(_){}auInit();if(on&&AU.c)musicStart(mode);}
-function applyVol(){if(!AU.mus)return;AU.mus.gain.value=.55*AU.musV*AU.musV;AU.sfx.gain.value=.75*AU.sfxV*AU.sfxV;}
+function applyVol(){if(!AU.mus)return;AU.mus.gain.value=.616*AU.musV*AU.musV; // v1.3.1: music +12% (.55 -> .616)
+ AU.sfx.gain.value=.75*AU.sfxV*AU.sfxV;}
 function setVol(k,v){AU[k]=v;lsSet(k==='musV'?'ngs_musv':'ngs_sfxv',v);applyVol();}
 // generic voices
 function tone(type,f0,f1,dur,vol,dest,t0,fq,atk,send){const a=AU.c;if(!a)return;t0=t0||a.currentTime;const o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f0,t0);if(f1!==f0)o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t0+dur);
@@ -48,7 +49,10 @@ function tone(type,f0,f1,dur,vol,dest,t0,fq,atk,send){const a=AU.c;if(!a)return;
 function noise(dur,vol,ftype,f0,f1,dest,t0,q,send){const a=AU.c;if(!a)return;t0=t0||a.currentTime;const s=a.createBufferSource();s.buffer=AU.nb;const f=a.createBiquadFilter();f.type=ftype;if(q)f.Q.value=q;f.frequency.setValueAtTime(f0,t0);if(f1!==f0)f.frequency.exponentialRampToValueAtTime(f1,t0+dur);const g=a.createGain();g.gain.setValueAtTime(vol,t0);g.gain.exponentialRampToValueAtTime(.0008,t0+dur);s.connect(f);f.connect(g);g.connect(dest||AU.sfx);if(send)g.connect(send);s.start(t0,Math.random()*.5);s.stop(t0+dur+.03);AU.vEnd=Math.max(AU.vEnd||0,t0+dur+.03);s.onended=()=>{s.disconnect();f.disconnect();g.disconnect();};}
 function sub(f0,f1,dur,vol,t0){tone('sine',f0,f1,dur,vol*.6,AU.sfx,t0);} // v1.1.4: subs -4.4dB
 const sfx={
- shot(){if(!AU.c)return;const t=AU.c.currentTime;if(t-AU.lastShot<.085)return;AU.lastShot=t;tone('triangle',1700,900,.028,.022,null,t);noise(.012,.012,'highpass',6000,6000,null,t);},
+ shot(){if(!AU.c)return;const t=AU.c.currentTime;if(t-AU.lastShot<.085)return;AU.lastShot=t;
+  // v1.3.1: shot -12% (vol .022->.0194, tick .012->.0106) + gentle static 7kHz lowpass (Q .5) to take the tinny edge off; same sound
+  if(!AU.shotLP||AU.shotLP.context!==AU.c||AU.shotLP._o!==AU.sfx){const f=AU.c.createBiquadFilter();f.type='lowpass';f.frequency.value=7000;f.Q.value=.5;f.connect(AU.sfx);f._o=AU.sfx;AU.shotLP=f;}
+  tone('triangle',1700,900,.028,.0194,AU.shotLP,t);noise(.012,.0106,'highpass',6000,6000,AU.shotLP,t);},
  zap(){tone('sawtooth',1800,300,.06,.025,null,0,4000);noise(.05,.03,'bandpass',4000,1500,null,0,3);},
  boom(s){if(!AU.c)return;s=s||1;const t=AU.c.currentTime,k=Math.min(3,s);
   sub(120+20*Math.random(),32,.28+.12*k,.45+.12*k,t);                 // low-end boom
