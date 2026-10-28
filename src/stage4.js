@@ -6,10 +6,10 @@ const G4={d:0,spd:1.4,ev:0,gates:[],sweeps:[],crush:[],hint:{}};
 const BOSS4D=4900,WALL4=34;const C4={ice:'#e8f6ff',ice2:'#9fd8ff',cr:'#ff2a4a',bg:'#07101e',st:'#1a2a44'};
 const s4y=d=>H-(d-G4.d),s4top=()=>G4.d+H+40;
 function hint4(k,a,c){if(G4.hint[k])return;G4.hint[k]=1;G.banner={t:20,a,b:'',small:true,c:c||C4.ice2};}
-function crushState(c){const t=c.t%220;return t<90?0:t<140?1:t<180?2:3;} // 0 open,1 warn,2 closed,3 opening
-function crushW(c){const t=c.t%220,full=(W-WALL4*2-c.gap)/2;return t<140?0:t<152?full*(t-140)/12:t<180?full:t<200?full*(1-(t-180)/20):0;}
-function s4span(y){let L=WALL4,R=W-WALL4;for(const c of G4.crush){const cy=s4y(c.d);if(y>cy-c.len/2&&y<cy+c.len/2){const w=crushW(c);const gl=c.gx-c.gap/2,gr=c.gx+c.gap/2;L=Math.max(L,Math.min(WALL4+w*2,gl));R=Math.min(R,Math.max(W-WALL4-w*2,gr));}}
- if(G4.sq)L=Math.max(L,WALL4+G4.sq),R=Math.min(R,W-WALL4-G4.sq);return{L,R};}
+function crushState(c){const t=c.t%240;return t<90?0:t<160?1:t<200?2:t<220?3:0;} // 0 open,1 warn,2 closed,3 opening
+function crushW(c){const t=c.t%240,full=(W-WALL4*2-c.gap)/2;return t<160?0:t<172?full*(t-160)/12:t<200?full:t<220?full*(1-(t-200)/20):0;}
+function s4span(y){let L=WALL4,R=W-WALL4,cr=0;for(const c of G4.crush){const cy=s4y(c.d);if(y>cy-c.len/2&&y<cy+c.len/2){const w=crushW(c);const gl=c.gx-c.gap/2,gr=c.gx+c.gap/2;L=Math.max(L,Math.min(WALL4+w*2,gl));R=Math.min(R,Math.max(W-WALL4-w*2,gr));const ct=c.t%240;if(w>0&&ct>=160&&ct<174)cr=1;}}
+ if(G4.sq)L=Math.max(L,WALL4+G4.sq),R=Math.min(R,W-WALL4-G4.sq);return{L,R,cr};}
 function s4BlockPB(b){return b.x<WALL4-2||b.x>W-WALL4+2;}
 function s4BlockEB(b){return b.x<WALL4-4||b.x>W-WALL4+4;}
 function wturret(side,cd){const d=s4top();spawn('wturret',side<0?WALL4+6:W-WALL4-6,s4y(d),{d,side,cd:cd||80,gl:0});}
@@ -17,12 +17,12 @@ function sentries(x,n){for(let i=0;i<n;i++)later(i*9,()=>spawn('sentry',x,-12,{p
 function gate(off){G4.gates.push({d:s4top(),t:off||0});}
 function sweep(side){G4.sweeps.push({d:s4top(),side,t:0});}
 function crusher(gx,gap){G4.crush.push({d:s4top()+60,len:120,gx,gap:gap||90,t:0});}
-XU.wturret=e=>{e.y=s4y(e.d);e.x=e.side<0?WALL4+6:W-WALL4-6;if(e.y>H+40){e.act=false;return;}if(e.y<20)return;e.cd--;if(e.cd===30){e.gl=1;}if(e.cd<=0){e.gl=0;e.cd=110;fan(e.x,e.y,aim(e.x,e.y),3,.25,2.6,true);}};
+XU.wturret=e=>{e.y=s4y(e.d);e.x=e.side<0?WALL4+6:W-WALL4-6;if(e.y>H+40){e.act=false;return;}if(e.y<20)return;e.cd--;if(e.cd===30){e.gl=1;}if(e.cd<=0){e.gl=0;e.cd=140;fan(e.x,e.y,aim(e.x,e.y),3,.3,2.1,true);}};
 XU.sentry=e=>{e.y+=e.vy;e.x+=Math.sin(e.t*.07+e.ph)*1.6;if(e.t===50)eShot(e.x,e.y,aim(e.x,e.y),2.6);};
 // --- boss 4: CRIMSON WARDEN (gate machine across the corridor). Parts: two WALL CANNONS + LASER PRISM; eye core armored until they break.
 function warning4(){strobe(90);G.banner={t:0,a:'⚠ WARNING ⚠',b:'CRIMSON WARDEN APPROACHING',warn:true};sfx.warn();}
 function spawnBoss4(){G4.spd=0;const b=spawn('boss4',W/2,-140,{invT:150,phase:0,hA:0,ls:0,lt:0,lcd:200,lanes:[],sqs:0,sqt:0,sqcd:520});G.boss=b;
- b.parts=[b.pL=mkPart(b,-(W/2-WALL4-22),40,24,200,'LEFT WALL CANNON','debris'),b.pR=mkPart(b,W/2-WALL4-22,40,24,200,'RIGHT WALL CANNON','debris'),b.pM=mkPart(b,0,-58,26,210,'LASER PRISM','debris')];musicStart(8);
+ b.parts=[b.pL=mkPart(b,-(W/2-WALL4-22),40,24,230,'LEFT WALL CANNON','debris'),b.pR=mkPart(b,W/2-WALL4-22,40,24,230,'RIGHT WALL CANNON','debris'),b.pM=mkPart(b,0,-58,26,240,'LASER PRISM','debris')];musicStart(8);
  later(160,()=>{G.banner={t:30,a:'🎯 BREAK BOTH WALL CANNONS + PRISM, THEN HIT THE EYE',b:'RED LANES = LASER · STAND IN A GREEN LANE',small:true,c:C4.ice2};});}
 XU.boss4=e=>{const t=e.t;
  if(e.dying){e.dT++;if(e.dT===1){strobe(200);sfx.bossDie();G4.sq=0;}if(e.dT%4===0)boom(e.x+rnd(-120,120),e.y+rnd(-60,60),rnd(1,2.4),['eb','cy','am'][e.dT%3]);G.shake=Math.max(G.shake,7);
@@ -31,17 +31,17 @@ XU.boss4=e=>{const t=e.t;
  const ph=e.phase,L=e.pL.act,R=e.pR.act,M=e.pM.act;e.r=ph<3?24:34;e.x=W/2+Math.sin(t*.01)*(ph===3?30:12);
  if(e.invT>0)return;
  // laser lanes: 0 idle, 1 telegraph (60f), 2 fire (40f)
- if(e.ls===0&&(M||ph===3)&&--e.lcd<=0&&!e.sqs){e.ls=1;e.lt=0;const n=5,safe=new Set();const a=(Math.random()*n)|0;safe.add(a);if(ph<3)safe.add((a+2+((Math.random()*2)|0))%n);e.lanes=[];for(let i=0;i<n;i++)if(!safe.has(i))e.lanes.push(i);sfx.hiss();}
- if(e.ls){e.lt++;if(e.ls===1&&e.lt>(ph===3?50:64)){e.ls=2;e.lt=0;sfx.flame();G.shake=8;}else if(e.ls===2){const lw=(W-WALL4*2)/5,li=Math.floor((P.x-WALL4)/lw);if(P.dead<=0&&e.lanes.includes(li)&&P.y>e.y){G.hitBy='laser';playerHit();}if(e.lt>40){e.ls=0;e.lcd=ph===3?200:260;}}return;}
+ if(e.ls===0&&(M||ph===3)&&--e.lcd<=0&&!e.sqs){e.ls=1;e.lt=0;const n=5,safe=new Set();const a=(Math.random()*n)|0;safe.add(a);safe.add((a+2+((Math.random()*2)|0))%n);e.lanes=[];for(let i=0;i<n;i++)if(!safe.has(i))e.lanes.push(i);sfx.hiss();}
+ if(e.ls){e.lt++;if(e.ls===1&&e.lt>(ph===3?66:80)){e.ls=2;e.lt=0;sfx.flame();G.shake=8;}else if(e.ls===2){const lw=(W-WALL4*2)/5,li=Math.floor((P.x-WALL4)/lw);if(P.dead<=0&&e.lanes.includes(li)&&P.y>e.y){G.hitBy='laser';playerHit();}if(e.lt>40){e.ls=0;e.lcd=ph===3?240:300;}}return;}
  // crusher squeeze: walls close in (telegraphed), hold, reopen
  if(!e.sqs&&--e.sqcd<=0){e.sqs=1;e.sqt=0;G.banner={t:40,a:'◀ WALLS CLOSING ▶ — STAY CENTRE',b:'',small:true,c:C4.cr};sfx.warn();}
  if(e.sqs){e.sqt++;const T=e.sqt,mx=70;G4.sq=T<60?0:T<100?mx*(T-60)/40:T<300?mx:T<340?mx*(1-(T-300)/40):0;if(T>=340){e.sqs=0;e.sqcd=600;G4.sq=0;}}
  const sp=1+ph*.1;
- if(L&&t%120===0){const y=e.y+40;for(let k=0;k<3;k++)later(k*8,()=>eShot(WALL4+22,y,aim(WALL4+22,y),2.3*sp));}
- if(R&&t%120===60){const y=e.y+40;for(let k=0;k<3;k++)later(k*8,()=>eShot(W-WALL4-22,y,aim(W-WALL4-22,y),2.3*sp));}
- if(ph>=1&&t%12===0){e.hA+=.27;eShot(e.x,e.y,e.hA,2);eShot(e.x,e.y,e.hA+Math.PI,2);}
- if(ph>=2&&t%120===60)ring(e.x,e.y,12,t*.03,1.9,true);
- if(ph===3&&t%50===0)fan(e.x,e.y,aim(e.x,e.y),7,.9,2.5,true);};
+ if(L&&t%120===0){const y=e.y+40;for(let k=0;k<3;k++)later(k*10,()=>eShot(WALL4+22,y,aim(WALL4+22,y),2.0*sp));}
+ if(R&&t%120===60){const y=e.y+40;for(let k=0;k<3;k++)later(k*10,()=>eShot(W-WALL4-22,y,aim(W-WALL4-22,y),2.0*sp));}
+ if(ph>=1&&t%14===0){e.hA+=.27;eShot(e.x,e.y,e.hA,1.8);eShot(e.x,e.y,e.hA+Math.PI,1.8);}
+ if(ph>=2&&t%120===60)ring(e.x,e.y,10,t*.03,1.6,true);
+ if(ph===3&&t%70===0)fan(e.x,e.y,aim(e.x,e.y),5,.9,2.1,true);};
 // --- stage flow
 const EV4=[[0,()=>{G.banner={t:0,a:'STAGE 4',b:'THE FROZEN CITADEL'};}],
  [160,()=>{hint4('wt','WALL TURRETS GLOW RED BEFORE FIRING — SHOOT THEM',C4.cr);wturret(-1,60);}],[260,()=>wturret(1,60)],[360,()=>sentries(120,5)],[480,()=>sentries(240,5)],
@@ -54,16 +54,16 @@ const EV4=[[0,()=>{G.banner={t:0,a:'STAGE 4',b:'THE FROZEN CITADEL'};}],
 function s4reset(d){Object.assign(G4,{d:d||0,spd:1.4,ev:0,gates:[],sweeps:[],crush:[],hint:{},sq:0});if(G4.d>0){while(G4.ev<EV4.length&&EV4[G4.ev][0]<G4.d)G4.ev++;for(const k of['wt','gate','cr','sw'])G4.hint[k]=1;}}
 function toStage4(){if(G.state!=='play')return;G.stage=4;s4reset(0);G.hold=false;G.boss=null;EB.clear();G.shield=Math.min(G.maxSh,G.shield+1);G.score+=G.lives*10000;
  G.banner={t:0,a:'STAGE 3 CLEAR',b:'+'+(G.lives*10000).toLocaleString()+' · SHIELD +1'};musicStart(7);G.ev4Delay=150;}
-function gateState(g){const t=(g.t)%200;return t<70?0:t<130?1:t<170?2:0;} // 0 off,1 warn,2 fire
+function gateState(g){const t=(g.t)%200;return t<50?0:t<130?1:t<170?2:0;} // 0 off,1 warn,2 fire
 function sweepAng(s){return s.side<0?(.15+.55*(1-Math.cos(s.t*.022))):(Math.PI-.15-.55*(1-Math.cos(s.t*.022)));}
 function s4Update(){if(G.ev4Delay>0){G.ev4Delay--;return;}
  G4.d+=G4.spd;while(G4.ev<EV4.length&&EV4[G4.ev][0]<=G4.d-0){EV4[G4.ev][1]();G4.ev++;}
  if(window.NG&&NG.auto)NG.auto();
  const alive=P.dead<=0&&G.lives>0;
  for(let i=G4.gates.length-1;i>=0;i--){const g=G4.gates[i];g.t++;const y=s4y(g.d);if(y>H+30){G4.gates.splice(i,1);continue;}if(gateState(g)===2&&(g.t%200)===130)sfx.zap();if(alive&&gateState(g)===2&&Math.abs(P.y-y)<9){G.hitBy='gate';playerHit();}}
- for(let i=G4.sweeps.length-1;i>=0;i--){const s=G4.sweeps[i];s.t++;const y=s4y(s.d);if(y>H+60){G4.sweeps.splice(i,1);continue;}s.y=y;if(s.t<70||!alive)continue;const a=sweepAng(s),ox=s.side<0?WALL4:W-WALL4,dx=P.x-ox,dy=P.y-y,u=dx*Math.cos(a)+dy*Math.sin(a),v=Math.abs(-dx*Math.sin(a)+dy*Math.cos(a));if(u>0&&u<240&&v<7){G.hitBy='sweep';playerHit();}}
+ for(let i=G4.sweeps.length-1;i>=0;i--){const s=G4.sweeps[i];s.t++;const y=s4y(s.d);if(y>H+60){G4.sweeps.splice(i,1);continue;}s.y=y;if(s.t<100||!alive)continue;const a=sweepAng(s),ox=s.side<0?WALL4:W-WALL4,dx=P.x-ox,dy=P.y-y,u=dx*Math.cos(a)+dy*Math.sin(a),v=Math.abs(-dx*Math.sin(a)+dy*Math.cos(a));if(u>0&&u<240&&v<7){G.hitBy='sweep';playerHit();}}
  for(let i=G4.crush.length-1;i>=0;i--){const c=G4.crush[i];c.t++;if(s4y(c.d)>H+90){G4.crush.splice(i,1);}}
- if(alive){const sp=s4span(P.y);if(P.x<sp.L+9||P.x>sp.R-9){const crushed=sp.L>WALL4+2||sp.R<W-WALL4-2;P.x=clamp(P.x,sp.L+9,sp.R-9);if(crushed&&P.x>sp.L+8&&P.x<sp.R-8){}if(crushed){G.hitBy='crusher';playerHit();}}}}
+ if(alive){const sp=s4span(P.y);if(P.x<sp.L+9||P.x>sp.R-9){const crushed=sp.cr;P.x=clamp(P.x,sp.L+9,sp.R-9);if(crushed&&P.x>sp.L+8&&P.x<sp.R-8){}if(crushed){G.hitBy='crusher';playerHit();}}}}
 // --- drawing
 function s4DrawBack(){ctx.fillStyle='rgba(7,16,30,.9)';ctx.fillRect(0,0,W,H);const off=G4.d%60;
  // floor tiles: frozen steel plates
@@ -76,10 +76,10 @@ function s4DrawBack(){ctx.fillStyle='rgba(7,16,30,.9)';ctx.fillRect(0,0,W,H);con
   if(st===2){ctx.globalCompositeOperation='lighter';ctx.fillStyle='rgba(255,42,74,.35)';ctx.fillRect(WALL4,y-8,W-WALL4*2,16);ctx.fillStyle='#ffe6ea';ctx.fillRect(WALL4,y-2,W-WALL4*2,4);ctx.globalCompositeOperation='source-over';}}
  // sweep lasers
  for(const s of G4.sweeps){const y=s4y(s.d),ox=s.side<0?WALL4:W-WALL4,a=sweepAng(s);ctx.fillStyle=C4.cr;ctx.beginPath();ctx.arc(ox,y,11,0,TAU);ctx.fill();ctx.strokeStyle=C4.ice;ctx.lineWidth=2;ctx.stroke();
-  if(s.t<70){ctx.setLineDash([6,6]);ctx.strokeStyle='rgba(255,140,160,.7)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(ox,y,240,s.side<0?.15:Math.PI-1.25,s.side<0?1.25:Math.PI-.15);ctx.stroke();ctx.beginPath();ctx.moveTo(ox,y);ctx.lineTo(ox+Math.cos(a)*240,y+Math.sin(a)*240);ctx.stroke();ctx.setLineDash([]);if((s.t>>2)%2)txt('⚠ SWEEP',ox+(s.side<0?60:-60),y-18,'#ffd0d8',12,'center');}
+  if(s.t<100){ctx.setLineDash([6,6]);ctx.strokeStyle='rgba(255,140,160,.7)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(ox,y,240,s.side<0?.15:Math.PI-1.25,s.side<0?1.25:Math.PI-.15);ctx.stroke();ctx.beginPath();ctx.moveTo(ox,y);ctx.lineTo(ox+Math.cos(a)*240,y+Math.sin(a)*240);ctx.stroke();ctx.setLineDash([]);if((s.t>>2)%2)txt('⚠ SWEEP',ox+(s.side<0?60:-60),y-18,'#ffd0d8',12,'center');}
   else{ctx.globalCompositeOperation='lighter';ctx.strokeStyle='rgba(255,42,74,.45)';ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(ox,y);ctx.lineTo(ox+Math.cos(a)*240,y+Math.sin(a)*240);ctx.stroke();ctx.strokeStyle='#ffe6ea';ctx.lineWidth=3;ctx.stroke();ctx.globalCompositeOperation='source-over';}}
  // crushers: safe-gap highlight during warning
- for(const c of G4.crush){const y=s4y(c.d),st=crushState(c);if(st===1||st===0&&c.t%220>60){const fl=(c.t>>2)%2;ctx.fillStyle='rgba(93,255,154,'+(fl?.22:.12)+')';ctx.fillRect(c.gx-c.gap/2,y-c.len/2,c.gap,c.len);ctx.strokeStyle='#5dff9a';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.strokeRect(c.gx-c.gap/2,y-c.len/2,c.gap,c.len);ctx.setLineDash([]);if(st===1&&fl){txt('▶',WALL4+14,y-8,C4.cr,16,'center');txt('◀',W-WALL4-14,y-8,C4.cr,16,'center');txt('SAFE',c.gx,y-8,'#5dff9a',13,'center');}}}}
+ for(const c of G4.crush){const y=s4y(c.d),st=crushState(c);if(st===1||st===0&&c.t%240>60){const fl=(c.t>>2)%2;ctx.fillStyle='rgba(93,255,154,'+(fl?.22:.12)+')';ctx.fillRect(c.gx-c.gap/2,y-c.len/2,c.gap,c.len);ctx.strokeStyle='#5dff9a';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.strokeRect(c.gx-c.gap/2,y-c.len/2,c.gap,c.len);ctx.setLineDash([]);if(st===1&&fl){txt('▶',WALL4+14,y-8,C4.cr,16,'center');txt('◀',W-WALL4-14,y-8,C4.cr,16,'center');txt('SAFE',c.gx,y-8,'#5dff9a',13,'center');}}}}
 function s4DrawFront(){// walls (drawn over gameplay so wall-mounted stuff reads as embedded)
  const off=G4.d%80;for(const s of[-1,1]){const x0=s<0?0:W-WALL4;ctx.fillStyle=C4.st;ctx.fillRect(x0,0,WALL4,H);for(let y=-80+off;y<H;y+=80){ctx.fillStyle='#24375a';ctx.fillRect(x0+3,y+4,WALL4-6,72);ctx.fillStyle='rgba(232,246,255,.55)';ctx.fillRect(s<0?WALL4-4:W-WALL4,y,4,80);ctx.fillStyle=C4.cr;ctx.fillRect(x0+WALL4/2-3,y+36,6,6);}
   ctx.strokeStyle=C4.ice2;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(s<0?WALL4:W-WALL4,0);ctx.lineTo(s<0?WALL4:W-WALL4,H);ctx.stroke();

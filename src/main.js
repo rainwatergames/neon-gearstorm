@@ -64,7 +64,7 @@ function ramp(){if(G.stage>=2)return 1;return clamp((G.st-14*60)/(70*60),0,1);} 
 let eid=0;
 const DEF={drone:{hp0:2,r:9,sc:100},swooper:{hp0:4,r:10,sc:150},turret:{hp0:16,r:14,sc:400},carrier:{hp0:14,r:18,sc:500},gunship:{hp0:420,r:44,sc:20000,big:true},part:{hp0:100,r:24,sc:0,big:true},boss:{hp0:900,r:44,sc:100000,big:true},boss2:{hp0:1700,r:22,sc:150000,big:true},block:{hp0:10,r:18,sc:200,big:true},
  swarm:{hp0:2,r:8,sc:120},spitter:{hp0:9,r:14,sc:400,med:1},egg:{hp0:4,r:11,sc:150},hive:{hp0:28,r:26,sc:1500,big:true,med:1},boss3:{hp0:520,r:22,sc:200000,big:true,xb:true,ns:true},
- wturret:{hp0:22,r:14,sc:500,big:true,med:1,ns:true},sentry:{hp0:5,r:11,sc:200},boss4:{hp0:650,r:24,sc:250000,big:true,xb:true,ns:true}};
+ wturret:{hp0:22,r:14,sc:500,big:true,med:1,ns:true},sentry:{hp0:5,r:11,sc:200},boss4:{hp0:780,r:24,sc:250000,big:true,xb:true,ns:true}};
 const SD=()=>S2D;
 function spawn(type,x,y,o){const e=EN.get();if(!e)return null;for(const k in e)if(k!=='act')delete e[k];Object.assign(e,{type,x,y,vx:0,vy:0,t:0,fl:0,rot:0,invT:0,id:++eid,big:false},DEF[type],o||{});e.hp=e.maxhp=e.hp0*(G.stage>=2&&type!=='block'&&type!=='part'&&type!=='boss2'&&!(DEF[type]&&DEF[type].ns)?SD().hp:1);return e;}
 function later(f,fn){G.timers.push({at:G.t+f,fn});}
@@ -320,7 +320,7 @@ function update(){G.t++;
  if(G.bombT>0){G.bombT--;for(const b of EB.a)b.act=false;if(G.bombT%3===0)for(const e of EN.a)if(e.act&&e.y>-20)hurt(e,e.big?1.2:3);}
  // player bullets
  for(const b of PB.a){if(!b.act)continue;if(b.k===3){b.t=(b.t||0)+1;if(b.t%3===0||!b.tg||!b.tg.act||b.tg.dying)b.tg=nearestEn(b.x,b.y,600);const sp=Math.min(9,3+b.t*.25);let a=Math.atan2(b.vy,b.vx);if(b.tg){let da=Math.atan2(b.tg.y-b.y,b.tg.x-b.x)-a;da=Math.atan2(Math.sin(da),Math.cos(da));a+=clamp(da,-.16,.16);}else a+=clamp(-Math.PI/2-a,-.1,.1);b.vx=Math.cos(a)*sp;b.vy=Math.sin(a)*sp;b.rot=a+Math.PI/2;if(b.t%2===0)part(0,b.x-b.vx,b.y-b.vy,rnd(-.5,.5),rnd(-.5,.5),14,.6,'mg');if(b.t>200){b.act=false;continue;}}b.x+=b.vx;b.y+=b.vy;if(b.y<-30||b.y>H+30||b.x<-20||b.x>W+20||(G.stage===2&&s2BlockPB(b))||(G.stage===4&&s4BlockPB(b))){b.act=false;continue;}
-  for(const e of EN.a){if(!e.act||e.y<-8||e.dying)continue;if(e.xb&&partsAlive(e)>0)continue;const rx=e.r+b.w/2,ry=e.r+b.h/2;if(Math.abs(e.x-b.x)<rx&&Math.abs(e.y-b.y)<ry){hurt(e,b.pierce&&(e.xb||(e.p&&e.p.xb))?b.dmg*.22:b.dmg);if(Math.random()<.3)part(0,b.x,b.y-4,rnd(-1,1),rnd(-2,0),8,.5,(WEAP[b.k]||WEAP[2]).d);if(b.k===3)boom(b.x,b.y,.6,'mg');if(!b.pierce){b.act=false;break;}}}}
+  for(const e of EN.a){if(!e.act||e.y<-8||e.dying)continue;if(e.xb&&partsAlive(e)>0)continue;const rx=e.r+b.w/2,ry=e.r+b.h/2;if(Math.abs(e.x-b.x)<rx&&Math.abs(e.y-b.y)<ry){hurt(e,(e.xb||(e.p&&e.p.xb))?(b.pierce?b.dmg*.13:b.k===2?b.dmg*2.5:b.dmg):b.dmg);if(Math.random()<.3)part(0,b.x,b.y-4,rnd(-1,1),rnd(-2,0),8,.5,(WEAP[b.k]||WEAP[2]).d);if(b.k===3)boom(b.x,b.y,.6,'mg');if(!b.pierce){b.act=false;break;}}}}
  // enemies
  for(const e of EN.a){if(!e.act)continue;updEnemy(e);if(!e.act||P.dead>0||e.dying)continue;const dx=e.x-P.x,dy=e.y-P.y,rr=e.r*.8+4;if(dx*dx+dy*dy<rr*rr&&e.y>0&&e.type!=='block'){G.hitBy=e.type;playerHit();}}
  // enemy bullets

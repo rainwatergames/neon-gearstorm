@@ -16,7 +16,7 @@ function hive(x){spawn('hive',x,-40,{cd:80});}
 function geyser(x,y){G3.gey.push({x,y,t:0});}
 function tentacle(y,side,len){G3.ten.push({y,side,len:len||230,t:0});}
 XU.swarm=e=>{const t=e.t;e.y+=e.vy;if(e.arc){e.x+=e.arc*2.2*Math.cos(t*.03);}else{e.x+=clamp((P.x-e.x)*.012,-1.2,1.2)+Math.sin(t*.12+e.ph)*1.3;}if(t===70&&Math.random()<.35)eShot(e.x,e.y,aim(e.x,e.y),2.4);};
-XU.spitter=e=>{const t=e.t;if(e.y<110+((e.id*37)%90))e.y+=1.1;else{e.x+=Math.sin(t*.02)*.6;e.cd--;if(e.cd===35){e.gl=1;sfx.hiss();}if(e.cd<=0){e.gl=0;e.cd=150;fan(e.x,e.y+12,aim(e.x,e.y+12),3,.45,2.3,true);}if(t>60*14)e.y+=1.4;}};
+XU.spitter=e=>{const t=e.t;if(e.y<110+((e.id*37)%90))e.y+=1.1;else{e.x+=Math.sin(t*.02)*.6;e.cd--;if(e.cd===35){e.gl=1;sfx.hiss();}if(e.cd<=0){e.gl=0;e.cd=170;fan(e.x,e.y+12,aim(e.x,e.y+12),3,.45,2.0,true);}if(t>60*14)e.y+=1.4;}};
 XU.egg=e=>{e.y+=e.vy;if(e.y>30&&--e.hatch<=0){e.act=false;boom(e.x,e.y,.7,'li');for(let i=0;i<3;i++)spawn('swarm',e.x+(i-1)*14,e.y,{ph:i*2,vy:1.7});}};
 XU.hive=e=>{const t=e.t;if(e.y<130)e.y+=.7;else{e.y+=.18;e.cd--;if(e.cd<=0){e.cd=110;spawn('swarm',e.x,e.y+20,{ph:rnd(0,TAU),vy:1.8});}}if(e.y>H+40)e.act=false;};
 // --- boss 3: HIVE QUEEN. Parts: 2 claws + egg sac; core (glowing crown eye) armored until all three are broken.
@@ -33,21 +33,21 @@ XU.boss3=e=>{const t=e.t;
  // claw swipe: 0 idle, 1 telegraph (red half-zone), 2 swipe, 3 recover
  if(e.cs===0){e.x=W/2+Math.sin(t*(.009+ph*.003))*(40+ph*14);e.y=150+Math.sin(t*.02)*10;
   if((L||R||ph===3)&&--e.ccd<=0){e.cs=1;e.ct=0;e.side=P.x<W/2?-1:1;if(e.side<0&&!L&&ph<3)e.side=1;if(e.side>0&&!R&&ph<3)e.side=-1;sfx.hiss();}}
- else{e.ct++;if(e.cs===1&&e.ct>(ph===3?48:64)){e.cs=2;e.ct=0;sfx.flame();G.shake=10;}
+ else{e.ct++;if(e.cs===1&&e.ct>(ph===3?62:80)){e.cs=2;e.ct=0;sfx.flame();G.shake=10;}
   else if(e.cs===2){const inZ=P.dead<=0&&(e.side<0?P.x<W/2+6:P.x>W/2-6)&&P.y>e.y-10&&P.y<e.y+330;if(e.ct<14&&inZ){G.hitBy='claw';playerHit();}
    if(e.ct===2)for(let i=0;i<10;i++)part(0,W/2+e.side*rnd(20,170),e.y+rnd(40,300),e.side*rnd(2,5),rnd(-1,1),20,1,'eb');if(e.ct>16){e.cs=3;e.ct=0;}}
-  else if(e.cs===3&&e.ct>30){e.cs=0;e.ccd=ph===3?170:230;}}
+  else if(e.cs===3&&e.ct>30){e.cs=0;e.ccd=ph===3?200:260;}}
  if(e.cs===1||e.cs===2)return; // readable: nothing else fires during the swipe telegraph
  const sp=1+ph*.1;
  // acid spit: mouth glows 30f then a fan
- if(t%100===70)e.mouth=30;if(e.mouth>0){e.mouth--;if(e.mouth===0)fan(e.x,e.y+40,aim(e.x,e.y+40),ph>=2?7:5,.8,2.4*sp,true);}
+ if(t%130===70)e.mouth=40;if(e.mouth>0){e.mouth--;if(e.mouth===0)fan(e.x,e.y+40,aim(e.x,e.y+40),ph>=2?5:4,.8,2.0*sp,true);}
  // egg sac lobs eggs that hatch
  if(M&&--e.ecd<=0){e.ecd=ph>=1?230:300;for(const dx of[-70,0,70])egg(clamp(e.x+dx+rnd(-20,20),30,W-30),e.y-40).vy=.9;}
  if(L&&t%100===0)fan(e.x-92,e.y+30,aim(e.x-92,e.y+30),3,.4,2.5*sp);
  if(R&&t%100===50)fan(e.x+92,e.y+30,aim(e.x+92,e.y+30),3,.4,2.5*sp);
- if(ph>=1&&t%9===0){e.hA+=.21;eShot(e.x,e.y,e.hA,2.1);}
- if(ph>=2&&t%130===65)ring(e.x,e.y,14,t*.02,1.8,true);
- if(ph===3){e.hA+=.03;if(t%6===0)for(let k=0;k<3;k++)eShot(e.x,e.y,e.hA+k*TAU/3,2.4);if(t%70===0)ring(e.x,e.y,16,(t/70)%2?TAU/32:0,2,true);}};
+ if(ph>=1&&t%11===0){e.hA+=.21;eShot(e.x,e.y,e.hA,1.9);}
+ if(ph>=2&&t%130===65)ring(e.x,e.y,11,t*.02,1.6,true);
+ if(ph===3){e.hA+=.03;if(t%8===0)for(let k=0;k<3;k++)eShot(e.x,e.y,e.hA+k*TAU/3,2.1);if(t%90===0)ring(e.x,e.y,12,(t/90)%2?TAU/24:0,1.7,true);}};
 // --- stage flow
 const EV3=[[0,()=>{G.banner={t:0,a:'STAGE 3',b:'THE XENO HIVE'};}],
  [140,()=>swarmArc(1)],[260,()=>swarmArc(-1)],
