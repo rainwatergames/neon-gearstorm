@@ -1,7 +1,7 @@
 // Build: concatenate src/*.js into one IIFE bundle at build/game.js
 const fs=require('fs'),path=require('path');const root=path.join(__dirname,'..');
 const order=['sprites.js','audio.js','stage2.js','stage3.js','stage4.js','main.js']; // v1.2.0: stage3.js removed (see git tag stage3-railchase-archive)
-const V='1.3.1-dev';
+const V='1.3.2';
 const hdr='/*! NEON GEARSTORM v'+V+' — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved.\n *  Unauthorized copying, distribution or modification of this file is prohibited. */\n';
 const body=order.map(f=>fs.readFileSync(path.join(root,'src',f),'utf8')).join('\n');
 fs.mkdirSync(path.join(root,'build'),{recursive:true});

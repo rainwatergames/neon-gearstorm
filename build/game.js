@@ -1,4 +1,4 @@
-/*! NEON GEARSTORM v1.3.1-dev — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved.
+/*! NEON GEARSTORM v1.3.2 — © 2026 Rainwater Games (Jeff Rainwater). All rights reserved.
  *  Unauthorized copying, distribution or modification of this file is prohibited. */
 (()=>{'use strict';
 // ---- sprites.js : pre-rendered neon/steampunk sprites (glow baked once for speed)
@@ -644,7 +644,7 @@ XD.boss4=(e,fl)=>{const x=e.x+(e.dying?rnd(-4,4):0),y=e.y;glowDot('eb',x,y,6,.3)
  if(arm){ctx.fillStyle='#5a6a80';ctx.fillRect(x-24,y-4,48,8);}glowDot(arm?'cy':'eb',x,y,arm?1.4:2.8+.6*Math.sin(G.t*.4),arm?.4:.85);if(!arm){ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(x,y,6,0,TAU);ctx.fill();}};
 
 // ---- main.js : game loop, entities, stage script
-const VERSION='v1.3.1-dev';
+const VERSION='v1.3.2';
 const Q=new URLSearchParams(location.search);
 const DBG=(Q.get('debug')||'').split(',');
 const DBG_BOSS=DBG.includes('boss')&&!/boss[234]/.test(DBG.join(',')),DBG_MID=DBG.includes('mid'),DBG_INV=DBG.includes('inv'),DBG_S2=DBG.includes('stage2'),DBG_B2=DBG.includes('boss2'),QSTG=(Q.get('stage')||'').toLowerCase(),DBG_S3=DBG.includes('stage3')||QSTG==='3',DBG_B3=DBG.includes('boss3')||QSTG==='3boss',DBG_S4=DBG.includes('stage4')||QSTG==='4',DBG_B4=DBG.includes('boss4')||QSTG==='4boss'; // v1.3.0: ?stage=2|2boss|3|3boss|4|4boss test links // v0.3: ?debug=boss no longer silently grants invincibility (root cause of 'red bullets did no damage')
@@ -1057,7 +1057,17 @@ function draw(){const play=G.state!=='title';const bc=beatClock();FX.pulse=Math.
  for(const b of EB.a)if(b.act)ds(b.big?S.ebB:S.eb,b.x,b.y);
  ctx.setTransform(SC*DPR,0,0,SC*DPR,0,0);
  drawHUD();}
-function txt(s,x,y,c,sz,al,gl){ctx.font='bold '+sz+'px "Trebuchet MS",system-ui,sans-serif';ctx.textAlign=al||'left';ctx.textBaseline='top';if(gl){ctx.shadowColor=c;ctx.shadowBlur=gl;}ctx.fillStyle=c;ctx.fillText(s,x,y);ctx.shadowBlur=0;}
+// v1.3.2: every canvas text is fitted inside the 360-wide play field: shrink if wider than the field (minus TXM margins), then nudge x so it never crosses an edge.
+const TXM=8,TXF=sz=>'bold '+sz+'px "Trebuchet MS",system-ui,sans-serif';
+function txt(s,x,y,c,sz,al,gl){s=String(s);al=al||'left';ctx.font=TXF(sz);let w=ctx.measureText(s).width;const mx=W-2*TXM;
+ if(w>mx){const f=Math.max(7,Math.floor(sz*mx/w));if(f<sz){sz=f;ctx.font=TXF(sz);w=ctx.measureText(s).width;}}
+ const l0=al==='center'?x-w/2:al==='right'?x-w:x,l=Math.min(Math.max(l0,TXM),Math.max(TXM,W-TXM-w));x+=l-l0;
+ ctx.textAlign=al;ctx.textBaseline='top';if(gl){ctx.shadowColor=c;ctx.shadowBlur=gl;}ctx.fillStyle=c;ctx.fillText(s,x,y,mx);ctx.shadowBlur=0;}
+// v1.3.2: word-wrap s into lines that fit maxW at size sz (shrinks the size until it fits in maxL lines). Returns {l:lines,sz}.
+function wrapT(s,sz,maxW,maxL){s=String(s);for(;;){ctx.font=TXF(sz);const ws=s.split(' '),L=[];let cur='';
+  for(const w of ws){const t=cur?cur+' '+w:w;if(cur&&ctx.measureText(t).width>maxW){L.push(cur);cur=w;}else cur=t;}if(cur)L.push(cur);
+  if((L.length<=maxL&&L.every(x=>ctx.measureText(x).width<=maxW))||sz<=8)return{l:L,sz};sz--;}}
+function txtW(s,x,y,c,sz,gl,maxL,lh){const r=wrapT(s,sz,W-2*TXM,maxL||2);r.l.forEach((t,i)=>txt(t,x,y+i*r.sz*(lh||1.2),c,r.sz,'center',gl));return r.l.length*r.sz*(lh||1.2);}
 function drawHUD(){txt(String(G.score).padStart(8,'0'),10,8,'#fff',16,'left',4+10*FX.pulse);txt('HI '+String(Math.max(G.hi,G.score)).padStart(8,'0'),W/2,10,'#9aa',11,'center');
  for(let i=0;i<G.lives-(P.dead>0?0:1);i++)ctx.drawImage(S.player,10+i*16,H-26,13,15);
  {const bw=Math.min(170,18*G.maxSh+44),sf=G.shield/G.maxSh,low=G.shDown>0&&(G.t>>3)%2;txt('SHIELD',10,28,low?COL.eb:COL.cy,10,'left',4);ctx.fillStyle='rgba(255,255,255,.12)';ctx.fillRect(58,29,bw,9);
@@ -1072,8 +1082,9 @@ function drawHUD(){txt(String(G.score).padStart(8,'0'),10,8,'#fff',16,'left',4+1
  const w=WEAP[G.weapon];txt(w.n,10,H-46,w.c,11,'left',4);for(let i=0;i<lvlCap();i++){ctx.fillStyle=i<G.lvl?(i>=3?COL.mg:w.c):'rgba(255,255,255,.15)';ctx.fillRect(64+i*10,H-44,7,8);}
  const bo=G.boss||G.mid;if(bo&&bo.act&&bo.y>0){const f=Math.max(0,bo.hp/bo.maxhp),arm=partsAlive(bo)>0;ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(40,60,W-80,6);if(arm)txt('CORE ARMORED — BREAK THE PARTS',W/2,69,'#aab',9,'center');ctx.fillStyle=arm?'#8a8aa0':G.boss?COL.mg:COL.am;ctx.fillRect(40,60,(W-80)*f,6);ctx.strokeStyle='rgba(255,255,255,'+(.35+.5*FX.pulse).toFixed(2)+')';ctx.strokeRect(40,60,W-80,6);}
  const b=G.banner;if(b){const a=b.t<20?b.t/20:b.t>170?(200-b.t)/30:1;ctx.globalAlpha=Math.max(0,a);
-  if(b.small){txt(b.a,W/2,H*.62,b.c,18,'center',10);}else{if(b.warn&&(b.t>>3)%2){ctx.fillStyle='rgba(255,36,80,.12)';ctx.fillRect(0,0,W,H);}
-  ctx.fillStyle='rgba(5,3,12,.55)';ctx.fillRect(0,H*.36,W,74);txt(b.a,W/2,H*.36+12,b.warn?COL.eb:COL.cy,28,'center',14);txt(b.b,W/2,H*.36+48,b.warn?'#fff':COL.am,13,'center',6);}ctx.globalAlpha=1;}}
+  if(b.small){const h=txtW(b.a,W/2,H*.62,b.c,18,10,2);if(b.b)txtW(b.b,W/2,H*.62+h+4,'#e6feff',12,5,2);}else{if(b.warn&&(b.t>>3)%2){ctx.fillStyle='rgba(255,36,80,.12)';ctx.fillRect(0,0,W,H);}
+  const ra=wrapT(b.a,28,W-2*TXM,1),rb=b.b?wrapT(b.b,13,W-2*TXM,2):{l:[],sz:13},bh=Math.max(74,48+rb.l.length*rb.sz*1.25+12);
+  ctx.fillStyle='rgba(5,3,12,.55)';ctx.fillRect(0,H*.36,W,bh);txt(b.a,W/2,H*.36+12,b.warn?COL.eb:COL.cy,28,'center',14);rb.l.forEach((t,i)=>txt(t,W/2,H*.36+48+i*rb.sz*1.25,b.warn?'#fff':COL.am,rb.sz,'center',6));}ctx.globalAlpha=1;}}
 // ---------- loop
 let last=0,acc=0,fpsN=0,fpsT=0;window.__fps=0;
 function frame(ts){requestAnimationFrame(frame);if(!last)last=ts;let dt=Math.min(100,ts-last);last=ts;fpsN++;fpsT+=dt;if(fpsT>=1000){window.__fps=fpsN;fpsN=0;fpsT=0;}

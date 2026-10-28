@@ -1,6 +1,6 @@
 // v1.3.0-dev: bot plays Stage 3 (Xeno Hive) -> Hive Queen -> Stage 4 (Frozen Citadel) -> Crimson Warden -> ALL STAGES CLEAR.
 // Reports per-stage times, boss fight times, hits taken (lives padded so the run continues), page errors; screenshots into shots/.
-const puppeteer=require('/workspace/cr-test/node_modules/puppeteer-core');
+const puppeteer=(()=>{for(const d of ['/workspace/cr-test','/workspace/uf-test']){try{return require(d+'/node_modules/puppeteer-core');}catch(_){}}throw new Error('puppeteer-core not found');})();
 const U=process.argv[2]||'http://localhost:8765/';const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 let fails=0;const ok=(c,m,x)=>{console.log((c?'PASS ':'FAIL ')+m+(x!==undefined?' '+JSON.stringify(x):''));if(!c)fails++;};
 const BOT=`window.__bot=function(){const G=NG.G,P=NG.P,W=360;NG.auto=function(){if(P.dead>0)return;const H=NG.H,b=G.boss&&G.boss.act&&!G.boss.dying?G.boss:null,G3=NG.G3,G4=NG.G4;let tx=180;

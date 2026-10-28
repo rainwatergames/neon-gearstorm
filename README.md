@@ -1,12 +1,17 @@
-# NEON GEARSTORM (working title) — v1.2.0
+# NEON GEARSTORM (working title) — v1.3.2
 
-A neon + steampunk vertical shoot-'em-up for phones (PWA), by **Rainwater Games**. Two stages for now (The Brass Nebula, The Iron Foundry); more stages are coming in later versions.
+A neon + steampunk vertical shoot-'em-up for phones (PWA), by **Rainwater Games**. Four stages: The Brass Nebula, The Iron Foundry, The Xeno Hive and The Frozen Citadel. Test links: `?stage=3`, `?stage=3boss`, `?stage=4`, `?stage=4boss`.
 Play: https://rainwatergames.github.io/neon-gearstorm/
 
 - Plain JS + Canvas 2D, no dependencies. Source in `src/`, bundle built to `build/game.js` with `node tools/build.js`.
 - Debug: `?debug=boss` (jump to boss, invincible, max weapon), `?debug=mid`, `?debug=inv`, add `laser`/`tesla`, `autostart`, `stage2`, `boss2` (old `stage3`/`boss3` links now start at boss 2, which leads to the ending).
 
 © 2026 Rainwater Games (Jeff Rainwater). All rights reserved. See LICENSE — not open source.
+
+## v1.3.2
+- Released Stage 3 (The Xeno Hive + Hive Queen) and Stage 4 (The Frozen Citadel + Crimson Warden) from the v1.3 preview, with the v1.3.1 audio mix.
+- Text fit: every canvas text is now fitted inside the play field. Long text shrinks to fit, word-wraps onto 2 lines (banners), and is nudged in from the edges (popups and warnings that follow the ship or a boss part). Fixed: the Hive Queen and Crimson Warden "🎯 BREAK ..." hints (ran off both sides), "◀ WALLS CLOSING ▶ — STAY CENTRE", and "-SHIELD", "HULL BREACH", "SHIELD FULL", "⚠ DRILL LUNGE", "⚠ CLAW SWIPE", "⚠ SWEEP" near the screen edges. The second line of the boss-hint banners ("RED ZONE = CLAW SWIPE ...", "RED LANES = LASER ...") was never drawn before and now shows. No gameplay, balance or audio changes.
+- Test: `node tools/v132text.js <url>` puts every banner and popup on screen at 360x800, 412x915 and 1600x900 and fails if any text leaves the screen (canvas or DOM). Screenshots are saved in shots/v132/.
 
 ## v1.2.0
 - Stage 3 (rail chase / Iron Locomotive) removed. Neon Gearstorm is 2 stages for now while a better Stage 3 is designed. The old code is kept at git tag `stage3-railchase-archive`.
