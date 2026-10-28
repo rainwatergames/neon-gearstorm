@@ -39,3 +39,12 @@ Play: https://rainwatergames.github.io/neon-gearstorm/
 - Stage 2 + Iron Foundry boss much harder; big visible upgrades (Overdrive Core LV4/5, Option Pods, Homing Missiles, bigger dmg/fire steps, muzzle flash, shield bubble). Model: `node tools/v05.js <url> model`.
 - Synth distorted lead guitar (waveshaper, wah, bends, vibrato, dive bombs, palm-muted chugs, solos) on stage 2 and both boss tracks.
 - Drill-lunge warning column: bright pulsing column, dashed borders, marching chevrons, "⚠ DRILL LUNGE".
+
+## v1.3.0-dev (preview build, branch v1.3-dev — not published to Pages)
+- **Stage 3 — THE XENO HIVE:** an organic alien world with pulsing hives that spawn swarmers, eggs that hatch, spitters, acid geysers and tentacle lanes. Each new mechanic gets a one-line hint banner the first time it appears. It has its own dark B-minor music.
+  - **Boss — HIVE QUEEN:** telegraphed claw swipe (a red zone marked "⚠ CLAW SWIPE / SAFE"), an acid fan from a glowing mouth, and an egg sac that lobs eggs. Break both claws and the egg sac, then shoot the exposed eye.
+- **Stage 4 — THE FROZEN CITADEL:** an ice-white and crimson fortress corridor. The walls carry destructible turrets, laser gates, wall-pivot sweep lasers and crushers that close and open (the green gap is safe). It has its own G-minor music.
+  - **Boss — CRIMSON WARDEN:** two wall cannons and a laser prism; the laser lanes are telegraphed and always leave safe lanes, and the walls close in during a squeeze phase.
+- **Ending:** after Stage 4 the game shows "ALL STAGES CLEAR! Thanks for testing! More stages coming in later versions."
+- **Test links:** `?stage=3`, `?stage=3boss`, `?stage=4`, `?stage=4boss` (`?stage=2`/`2boss` still work).
+- **Tests:** `node tools/v130.js` checks the links and runs a bot from Stage 3 through the ending; `node tools/v114audio.js` covers all stages and keeps peaks ≤ -1 dBFS. `tools/v120.js` is legacy: it still expects the 2-stage ending.

@@ -30,7 +30,7 @@ function auInit(){if(AU.c){if(AU.c.state!=='running'&&G.state!=='pause')AU.c.res
   AU.gtr=gi;AU.gtrOut=out;AU.wah=wah;
   // palm-mute chug rig: separate shaper, dark cab
   const ci=a.createGain();const cs=a.createWaveShaper();cs.curve=gc;cs.oversample='2x';const cl=a.createBiquadFilter();cl.type='lowpass';cl.frequency.value=1300;cl.Q.value=1.4;const co=a.createGain();co.gain.value=.15;ci.connect(cs);cs.connect(cl);cl.connect(co);co.connect(AU.duck);AU.chug=ci;}
- AU.gcount=0;AU.mcount=[0,0,0,0,0,0];
+ AU.gcount=0;AU.mcount=[0,0,0,0,0,0,0,0,0,0];
  const n=a.sampleRate;AU.nb=a.createBuffer(1,n,n);const d=AU.nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}
 // v1.1.5 audio watchdog. Phones can suspend/'interrupt' the context mid-game (headset route change, audio-focus loss, render overload),
 // and one NaN sample (e.g. from an unstable filter) poisons the delay feedback loop + compressor forever = total silence. The old code only resumed on a NEW
@@ -115,6 +115,18 @@ SONGS.push({bpm:164,boss:1,ch:[[61,64,68],[57,61,64],[54,57,61],[56,60,63]],root
 // v1.2.0: stage 3 (and its two songs) removed. Mode 4 = ALL STAGES CLEAR victory theme: bright C major, 128 bpm, loops on the ending screen
 SONGS.push({bpm:128,ch:[[60,64,67],[65,69,72],[67,71,74],[64,67,71]],root:[48,53,55,52],hook:tr(HOOK,0),
  sec:[['intro',2,'S p'],['chorus',8,'k b h s a l c o'],['hook',8,'k b h s a l o r c'],['break',2,'p lf'],['chorus',8,'k b h s a l c o g']]});
+// v1.3.0 stage 3 (XENO HIVE): B minor with a flat-2 sting, eerie + darker ; boss 3 (HIVE QUEEN): F# minor, fast
+const AHOOK=[[0,71,2],[2,72,2],[4,71,4],[10,66,2],[12,67,4],[16,71,2],[18,74,2],[20,72,6],[28,71,4],[32,66,3],[35,67,3],[38,70,2],[40,71,6],[48,74,2],[50,72,2],[52,71,2],[54,67,2],[56,66,8]];
+SONGS.push({bpm:120,dark:1,ch:[[59,62,66],[60,64,67],[59,62,65],[57,60,64]],root:[47,48,47,45],hook:AHOOK,
+ sec:[['intro',4,'k p lf S'],['crawl',8,'k b h p G'],['verse',8,'k b h s a p G'],['chorus',8,'k b h s p c o g G'],['break',4,'p lf S'],['drop',8,'k b h s a p g c o r G']]});
+SONGS.push({bpm:158,boss:1,ch:[[54,57,61],[55,59,62],[52,55,59],[53,57,61]],root:[42,43,40,41],hook:tr(AHOOK,-5),
+ sec:[['siren',4,'S k G'],['heavy',8,'k b h s o G'],['hook',8,'k b h s g o r G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['hook',8,'k b h s a g o r c G']]});
+// v1.3.0 stage 4 (FROZEN CITADEL): G minor march, driving ; boss 4 (CRIMSON WARDEN): C minor, fastest
+const FHOOK=[[0,67,3],[3,70,3],[6,74,2],[8,72,4],[12,70,4],[16,74,3],[19,75,3],[22,74,2],[24,72,8],[32,67,2],[34,70,2],[36,72,2],[38,74,2],[40,75,4],[44,74,4],[48,72,3],[51,70,3],[54,69,2],[56,67,8]];
+SONGS.push({bpm:138,dark:1,ch:[[55,58,62],[51,55,58],[53,57,60],[50,54,57]],root:[43,39,41,38],hook:FHOOK,
+ sec:[['intro',4,'k a p S'],['march',8,'k b h s a p G'],['verse',8,'k b h s a p l G'],['chorus',8,'k b h s a p l c o G'],['break',4,'p lf'],['drop',8,'k b h s a p g c o r G']]});
+SONGS.push({bpm:172,boss:1,ch:[[60,63,67],[56,60,63],[58,62,65],[55,59,62]],root:[48,44,46,43],hook:tr(FHOOK,5),
+ sec:[['siren',4,'S k G'],['heavy',8,'k b h s o G'],['hook',8,'k b h s a g o r G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['hook',8,'k b h s a g o r c G']]});
 // stage-1 boss also gets the guitars + a solo
 SONGS[1].sec=[['siren',4,'S k'],['heavy',8,'k b h s a o G'],['hook',8,'k b h s a l o r G'],['solo',8,'k b h s o G Q r'],['break',2,'S p'],['hook',8,'k b h s a g o r c G']];
 function songLen(s){let n=0;for(const x of s.sec)n+=x[1];return n;}
