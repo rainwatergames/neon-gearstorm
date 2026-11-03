@@ -843,7 +843,7 @@ const SCN={
  twist:{art:'twist',title:'COLOSSUS',sub:'THE TRUTH',lines:[{w:'S',s:'Wait... why is the fortress\'s skyline... turning?'},{w:'G',s:'Fortress? Foolish insect. You have been crawling on MY BODY.'},{w:'S',s:'It turned its head all the way around! The fortress IS the Gearlord!'},{w:'A',s:'Then I go for the face.'}]},
  ending:{art:'ending',title:'ENDING',sub:'...OR IS IT?',lines:[{w:'S',s:'He\'s down! The whole giant is coming apart! Ace, you did it!'},{w:'A',s:'Sparks... something just launched out of the wreck. His core.'},{w:'G',s:'You cannot delete me. I am in every machine. Rebooting...'},{w:'G',s:'Difficulty level {L}... initiated.'},{w:'S',s:'Of course it is. Refuel, rookie. We go again.'}]}};
 // ---- boot + start hooks
-function v2Boot(){v2Defs();
+function v2Boot(){v2Defs();const st=document.createElement('style');st.textContent='body.ngcut #rgInstall{display:none!important}';document.head.appendChild(st);
  const hb=$('bHangar');if(hb&&!$('bLB')){const b=document.createElement('button');b.id='bLB';b.className=hb.className.replace(/\bpulse\b/,'');b.textContent='🏆 TOP 20';hb.parentNode.insertBefore(b,hb.nextSibling);b.onclick=()=>{lbShow(null,()=>show('title'));};}
  addEventListener('keydown',e=>{if(G.state==='cut'){if(e.code==='Escape')cutEnd();else if(e.code==='Enter'||e.code==='Space')cutAdvance();}else if(G.state==='diff'&&(e.code==='Enter'||e.code==='Space')&&G.diffT>100)nextLoop();});
  cv.addEventListener('pointerdown',e=>{if(G.state!=='cut'&&G.state!=='diff')return;auInit();const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/SC,y=(e.clientY-r.top)/SC;if(!CS.mus&&AU.c&&G.state==='cut'){CS.mus=1;musicStart(23);}if(G.state==='cut')cutTap(x,y);else if(G.diffT>100)nextLoop();});
@@ -1534,7 +1534,7 @@ function drawPart(e){if(e.p.type==='boss'||e.p.type==='gunship'){const x=e.x,y=e
   if(e.hitT>0){const f=Math.max(0,e.hp/e.maxhp),bw=e.r*1.5;ctx.globalAlpha=Math.min(1,e.hitT/30);ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(x-bw/2,y+e.r+6,bw,4);ctx.fillStyle=f>.5?COL.li:f>.25?COL.am:COL.eb;ctx.fillRect(x-bw/2,y+e.r+6,bw*f,4);ctx.globalAlpha=1;}}}
 function drawLightning(x0,y0,x1,y1){const n=7;ctx.beginPath();ctx.moveTo(x0,y0);for(let i=1;i<n;i++){const f=i/n;ctx.lineTo(x0+(x1-x0)*f+rnd(-9,9),y0+(y1-y0)*f+rnd(-9,9));}ctx.lineTo(x1,y1);}
 function draw(){const play=G.state!=='title';const bc=beatClock();FX.pulse=Math.exp(-bc.f*5)*(SET.rf?.3:1)*(bc.b%4===0?1:.75);const pq=Math.round(FX.pulse*10)/10;if(pq!==FX.pq){FX.pq=pq;document.documentElement.style.setProperty('--p',pq);}const sx=G.shake?rnd(-G.shake,G.shake):0,sy=G.shake?rnd(-G.shake,G.shake):0;
- if(G.state==='cut'){drawCut();return;}if(G.state==='diff'){drawDiff();return;}
+ {const c=G.state==='cut';if(c!==draw.cut){draw.cut=c;document.body.classList.toggle('ngcut',c);}}if(G.state==='cut'){drawCut();return;}if(G.state==='diff'){drawDiff();return;}
  ctx.setTransform(SC*DPR,0,0,SC*DPR,sx*SC*DPR,sy*SC*DPR);drawBG(G.state==='pause'?0:1);
  if(!play){return;}
  if(G.stage===2)s2DrawBack();if(G.stage===3)s3DrawBack();if(G.stage===4)s4DrawBack();if(G.stage>4)vDrawBack();

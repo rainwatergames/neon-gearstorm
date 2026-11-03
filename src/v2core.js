@@ -162,7 +162,7 @@ const SCN={
  twist:{art:'twist',title:'COLOSSUS',sub:'THE TRUTH',lines:[{w:'S',s:'Wait... why is the fortress\'s skyline... turning?'},{w:'G',s:'Fortress? Foolish insect. You have been crawling on MY BODY.'},{w:'S',s:'It turned its head all the way around! The fortress IS the Gearlord!'},{w:'A',s:'Then I go for the face.'}]},
  ending:{art:'ending',title:'ENDING',sub:'...OR IS IT?',lines:[{w:'S',s:'He\'s down! The whole giant is coming apart! Ace, you did it!'},{w:'A',s:'Sparks... something just launched out of the wreck. His core.'},{w:'G',s:'You cannot delete me. I am in every machine. Rebooting...'},{w:'G',s:'Difficulty level {L}... initiated.'},{w:'S',s:'Of course it is. Refuel, rookie. We go again.'}]}};
 // ---- boot + start hooks
-function v2Boot(){v2Defs();
+function v2Boot(){v2Defs();const st=document.createElement('style');st.textContent='body.ngcut #rgInstall{display:none!important}';document.head.appendChild(st);
  const hb=$('bHangar');if(hb&&!$('bLB')){const b=document.createElement('button');b.id='bLB';b.className=hb.className.replace(/\bpulse\b/,'');b.textContent='🏆 TOP 20';hb.parentNode.insertBefore(b,hb.nextSibling);b.onclick=()=>{lbShow(null,()=>show('title'));};}
  addEventListener('keydown',e=>{if(G.state==='cut'){if(e.code==='Escape')cutEnd();else if(e.code==='Enter'||e.code==='Space')cutAdvance();}else if(G.state==='diff'&&(e.code==='Enter'||e.code==='Space')&&G.diffT>100)nextLoop();});
  cv.addEventListener('pointerdown',e=>{if(G.state!=='cut'&&G.state!=='diff')return;auInit();const r=cv.getBoundingClientRect(),x=(e.clientX-r.left)/SC,y=(e.clientY-r.top)/SC;if(!CS.mus&&AU.c&&G.state==='cut'){CS.mus=1;musicStart(23);}if(G.state==='cut')cutTap(x,y);else if(G.diffT>100)nextLoop();});
