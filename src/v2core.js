@@ -18,7 +18,7 @@ function comboKill(e){if(G.state!=='play'||e.type==='part')return;V2.combo++;V2.
  if(e.wv&&V2.wk)V2.wk[e.wv]=(V2.wk[e.wv]||0)+1;}
 function comboBreak(){if(V2.combo>=8){G.pop2={t:0,x:P.x,y:P.y-50,s:'CHAIN BROKEN ×'+V2.mult};}V2.combo=0;V2.mult=1;V2.meter=0;}
 function callout(s,k){V2.call={t:0,s,k};sfx.power&&sfx.power();if(AU.c&&!AU.muted){const t=AU.c.currentTime;tone('square',mf(72),mf(84),.18,.05,AU.sfx,t,3000);tone('square',mf(79),mf(91),.22,.05,AU.sfx,t+.09,3000);}
- try{if(window.speechSynthesis&&!AU.muted&&AU.sfxV>0){const u=new SpeechSynthesisUtterance(k===5?'Combo!':k===10?'Frenzy!':k===25?'Unstoppable!':'Gear storm!');u.rate=.95;u.pitch=.1;u.volume=Math.min(1,.45*AU.sfxV);speechSynthesis.cancel();speechSynthesis.speak(u);}}catch(_){}}
+ try{if(AU.c&&!AU.muted&&AU.sfxV>0){const t=AU.c.currentTime,n=k===5?2:k===10?3:k===25?4:5,b=[110,138.6,164.8,220,277.2];for(let q=0;q<n;q++){tone('sawtooth',b[q],b[q],.22,.07,AU.sfx,t+q*.07);tone('square',b[q]/2,b[q]/2,.26,.05,AU.sfx,t+q*.07);}}}catch(_){}}
 function v2Tick(){// per-frame (play state): meter drain, grazes, wave wipes, score/reward multipliers
  if(V2.combo>0){V2.meter-=.0055+.00025*Math.min(V2.mult,40);if(V2.meter<=0)comboBreak();}
  if(V2.call){V2.call.t++;if(V2.call.t>110)V2.call=null;}
