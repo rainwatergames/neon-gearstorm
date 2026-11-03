@@ -26,7 +26,7 @@ function spawnBoss3(){const b=spawn('boss3',W/2,-150,{invT:150,phase:0,hA:0,cs:0
  later(160,()=>{G.banner={t:30,a:'🎯 BREAK CLAWS + EGG SAC, THEN HIT THE EYE',b:'RED ZONE = CLAW SWIPE · MOVE TO THE OTHER SIDE',small:true,c:C3.c};});}
 XU.boss3=e=>{const t=e.t;
  if(e.dying){e.dT++;if(e.dT===1){strobe(200);sfx.bossDie();}if(e.dT%4===0)boom(e.x+rnd(-100,100),e.y+rnd(-70,70),rnd(1,2.4),['li','mg','cy'][e.dT%3]);e.y+=.3;G.shake=Math.max(G.shake,7);
-  if(e.dT===200){boom(e.x,e.y,5,'li');boom(e.x,e.y,4,'mg');flash(1,'200,255,160');sfx.bossDie();e.act=false;G.boss=null;later(150,toStage4);}return;}
+  if(e.dT===200){boom(e.x,e.y,5,'li');boom(e.x,e.y,4,'mg');flash(1,'200,255,160');sfx.bossDie();e.act=false;G.boss=null;later(150,()=>goStage(4));}return;}
  if(e.y<150){e.y+=1;e.invT=Math.max(e.invT,2);return;}
  const ph=e.phase,L=e.pL.act,R=e.pR.act,M=e.pM.act;e.r=ph<3?22:36;
  if(e.invT>0)return;

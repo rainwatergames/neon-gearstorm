@@ -30,7 +30,7 @@ function auInit(){if(AU.c){if(AU.c.state!=='running'&&G.state!=='pause')AU.c.res
   AU.gtr=gi;AU.gtrOut=out;AU.wah=wah;
   // palm-mute chug rig: separate shaper, dark cab
   const ci=a.createGain();const cs=a.createWaveShaper();cs.curve=gc;cs.oversample='2x';const cl=a.createBiquadFilter();cl.type='lowpass';cl.frequency.value=1300;cl.Q.value=1.4;const co=a.createGain();co.gain.value=.15;ci.connect(cs);cs.connect(cl);cl.connect(co);co.connect(AU.duck);AU.chug=ci;}
- AU.gcount=0;AU.mcount=[0,0,0,0,0,0,0,0,0,0];
+ AU.gcount=0;AU.mcount=new Array(32).fill(0);
  const n=a.sampleRate;AU.nb=a.createBuffer(1,n,n);const d=AU.nb.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}
 // v1.1.5 audio watchdog. Phones can suspend/'interrupt' the context mid-game (headset route change, audio-focus loss, render overload),
 // and one NaN sample (e.g. from an unstable filter) poisons the delay feedback loop + compressor forever = total silence. The old code only resumed on a NEW

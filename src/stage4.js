@@ -26,7 +26,7 @@ function spawnBoss4(){G4.spd=0;const b=spawn('boss4',W/2,-140,{invT:150,phase:0,
  later(160,()=>{G.banner={t:30,a:'🎯 BREAK BOTH WALL CANNONS + PRISM, THEN HIT THE EYE',b:'RED LANES = LASER · STAND IN A GREEN LANE',small:true,c:C4.ice2};});}
 XU.boss4=e=>{const t=e.t;
  if(e.dying){e.dT++;if(e.dT===1){strobe(200);sfx.bossDie();G4.sq=0;}if(e.dT%4===0)boom(e.x+rnd(-120,120),e.y+rnd(-60,60),rnd(1,2.4),['eb','cy','am'][e.dT%3]);G.shake=Math.max(G.shake,7);
-  if(e.dT===200){boom(e.x,e.y,5,'eb');boom(e.x,e.y,4,'cy');flash(1,'255,230,235');sfx.bossDie();e.act=false;G.boss=null;later(150,stageClear);}return;}
+  if(e.dT===200){boom(e.x,e.y,5,'eb');boom(e.x,e.y,4,'cy');flash(1,'255,230,235');sfx.bossDie();e.act=false;G.boss=null;later(150,()=>goStage(5));}return;}
  if(e.y<130){e.y+=1;e.invT=Math.max(e.invT,2);return;}
  const ph=e.phase,L=e.pL.act,R=e.pR.act,M=e.pM.act;e.r=ph<3?24:34;e.x=W/2+Math.sin(t*.01)*(ph===3?30:12);
  if(e.invT>0)return;
